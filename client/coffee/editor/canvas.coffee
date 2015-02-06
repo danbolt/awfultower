@@ -35,8 +35,6 @@ module.exports = class extends createjs.Container
       frames:
         width: @tileWidth
         height: @tileHeight
-        margin: 1
-        spacing: 1
 
     @tilesheet = new createjs.SpriteSheet data
 

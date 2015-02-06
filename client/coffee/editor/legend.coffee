@@ -14,15 +14,13 @@ module.exports = class Legend extends createjs.Container
       frames:
         width: @tileWidth
         height: @tileHeight
-        margin: 1
-        spacing: 1
 
     @tilesheet = new createjs.SpriteSheet data
 
-    for i in [0..23]
-      for j in [0..19]
+    for i in [0..9]
+      for j in [0..7]
         s = new createjs.Sprite @tilesheet
-        s.gotoAndStop (index = i*20 + j)
+        s.gotoAndStop (index = i*8 + j)
         s.on 'click', _.partial(@tileSelected, i, j, index)
         s.x = j*@tileWidth
         s.y = i*@tileHeight

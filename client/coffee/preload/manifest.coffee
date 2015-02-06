@@ -3,7 +3,7 @@ item = (src, id) ->
 
 manifest =  [
 
-  item('level.png', 'level')
+  item('level3.png', 'level')
   item('brush-vertical.png', 'brush-vertical')
   item('brush-horizontal.png', 'brush-horizontal')
   item('brush-square.png', 'brush-square')
