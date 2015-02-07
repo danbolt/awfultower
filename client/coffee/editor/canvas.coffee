@@ -3,6 +3,7 @@ LevelData = require '../level_data'
 Tile = require '../tile'
 
 MOVE_DISTANCE =  LevelData.tileWidth
+GRID_COLOR = "#e5e5e5"
 
 module.exports = class extends createjs.Container
   constructor: (@delegate) ->
@@ -18,12 +19,21 @@ module.exports = class extends createjs.Container
     @brush = x: 0, y: 0
     @brushSize = 1
 
-    @tilesX = {}
-    @tilesY = {}
+    @undoHistory = []
+    @redoHistory = []
+    @activeHistory = null
+
+    @gridOn = true
 
     $(window).keydown (e) =>
       if e.keyCode is 68
         @delete = true
+      else if e.keyCode is 85
+        @undo()
+      else if e.keyCode is 82
+        @redo()
+      if e.keyCode is 71
+        @_G_DOWN = true
 
     $(window).keyup (e) =>
       if e.keyCode is 68
@@ -38,10 +48,14 @@ module.exports = class extends createjs.Container
 
     @tilesheet = new createjs.SpriteSheet data
 
-    @addHighlight()
 
     $(window).keydown _.partial(@panKeyChanged, true, _)
     $(window).keyup _.partial(@panKeyChanged, false, _)
+
+    @on 'added', ->
+      @width = @stage.canvas.width
+      @addHighlight()
+      @addGrid()
 
   panKeyChanged: (down, e) =>
     if e.keyCode is 72
@@ -62,12 +76,11 @@ module.exports = class extends createjs.Container
       _x = @brush.x * @brushSize
       _y = @brush.y * @brushSize
 
-    stage = @delegate.delegate.stage
-    return if stage.mouseX - _x*@tileWidth < @x
+    return if @stage.mouseX - _x*@tileWidth < @x
 
     @removeChild(@selection) if @selection
 
-    {x,y} = @gridCoords(stage.mouseX, stage.mouseY)
+    {x,y} = @gridCoords(@stage.mouseX, @stage.mouseY)
     x *= @tileWidth
     y *= @tileHeight
 
@@ -86,12 +99,21 @@ module.exports = class extends createjs.Container
 
   stageMouseUp: (e) =>
     @mouseDown = false
+    @undoHistory.push @activeHistory
+    @activeHistory = null
 
   stageMouseDown: (e) =>
+    @activeHistory = []
+    @redoHistory = []
     @mouseDown = true
     @addTiles(e.rawX, e.rawY)
 
   update: ->
+    if @_G_DOWN
+      @gridOn = not @gridOn
+      @grid.visible = @gridOn
+      @_G_DOWN = false
+
     if @left
       @move x: -MOVE_DISTANCE
     else if @right
@@ -100,11 +122,10 @@ module.exports = class extends createjs.Container
       @move y: MOVE_DISTANCE
     else if @down
       @move y: -MOVE_DISTANCE
-    stage = @delegate.delegate.stage
     if @mouseDown
-      @addTiles(stage.mouseX, stage.mouseY)
+      @addTiles(@stage.mouseX, @stage.mouseY)
 
-    {x,y} = @gridCoords(stage.mouseX, stage.mouseY)
+    {x,y} = @gridCoords(@stage.mouseX, @stage.mouseY)
 
     @addHighlight()
 
@@ -127,20 +148,15 @@ module.exports = class extends createjs.Container
     return if @worldCoords(x, y).x < @x
     @tiles[x] ||= {}
 
-    @tilesX[x] ||= []
-    @tilesY[y] ||= []
-
-
     return if (tile = @tiles[x][y])?.tile is index
     t = new Tile(x, y, index, @tilesheet)
 
     if tile then @removeChild(tile)
 
-    @tilesX[x].push(t)
-    @tilesY[y].push(t)
-
     @tiles[x][y] = t
     @addChild t
+
+    @activeHistory.push t
 
   removeTile: (x, y) ->
     tile = @tiles[x]?[y]
@@ -153,22 +169,36 @@ module.exports = class extends createjs.Container
     right = (Math.floor(@width / @tileWidth) * @tileWidth + @regX) / @tileWidth
 
     if direction.x > 0
-      if @tilesX[left] then for tile in @tilesX[left]
+      if @tiles[left] then for y, tile of @tiles[left]
         tile.visible = false
 
-      if @tilesX[right+1] then for tile in @tilesX[right+1]
+      if @tiles[right+1] then for y, tile of @tiles[right+1]
         tile.visible = true
 
     if direction.x < 0
-      if @tilesX[left-1] then for tile in @tilesX[left-1]
+      if @tiles[left-1] then for y, tile of @tiles[left-1]
         tile.visible = true
 
-      if @tilesX[right] then for tile in @tilesX[right]
+      if @tiles[right] then for y, tile of @tiles[right]
         tile.visible = false
 
     @regX += direction.x if direction.x
     @regY += direction.y if direction.y
 
+
+  undo: ->
+    return unless (tiles = @undoHistory.pop())
+    @redoHistory.push tiles
+    for tile in tiles
+      @removeTile(tile.pos.x, tile.pos.y)
+
+  redo: ->
+    return unless (tiles = @redoHistory.pop())
+    @activeHistory = []
+    for tile in tiles
+      @addTile(tile.pos.x, tile.pos.y, 0)
+    @undoHistory.push @activeHistory
+    @activeHistory = []
 
   # Where in pixel values should the tile be
   worldCoords: (x, y) ->
@@ -180,4 +210,26 @@ module.exports = class extends createjs.Container
     x:  Math.floor((x + @regX - @x) / @tileWidth)
     y:  Math.floor((y + @regY - @y) / @tileHeight)
 
+  addGrid: ->
+    @grid = new createjs.Container()
 
+    for i in [0..@stage.canvas.width] by @tileWidth
+
+      line = new createjs.Shape()
+      line.graphics.setStrokeStyle(1)
+      line.graphics.beginStroke(GRID_COLOR)
+      line.graphics.moveTo(i, 0)
+      line.graphics.lineTo(i, @stage.canvas.height)
+      @grid.addChild(line)
+
+
+    for i in [0..@stage.canvas.height] by @tileHeight
+
+      line = new createjs.Shape()
+      line.graphics.setStrokeStyle(1)
+      line.graphics.beginStroke(GRID_COLOR)
+      line.graphics.moveTo(0, i)
+      line.graphics.lineTo(@stage.canvas.width, i)
+      @grid.addChild(line)
+
+    @stage.addChild(@grid)

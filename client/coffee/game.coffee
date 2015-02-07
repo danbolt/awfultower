@@ -8,14 +8,11 @@ class Game
     @throttle = 0
 
   loadComplete: =>
-    @stage = new createjs.Stage 'canvas'
+    # @stage = new createjs.Stage 'legend-canvas'
 
     @editor = new Editor @
-    @editor.show()
+    # @editor.show()
 
-    createjs.Ticker.addEventListener 'tick', @stage
-    createjs.Ticker.addEventListener 'tick', @tick
-    createjs.Ticker.framerate = 60
 
   tick: (e) =>
     @scene.update()

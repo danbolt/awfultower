@@ -2,6 +2,7 @@ gulp =            require 'gulp'
 coffee =          require 'gulp-coffee'
 concat =          require 'gulp-concat'
 gutil =           require 'gulp-util'
+sass =            require 'gulp-sass'
 del =             require 'del'
 browserify =      require 'browserify'
 watchify =        require 'watchify'
@@ -15,12 +16,14 @@ paths =
   vendor:         './vendor'
   html:           './client/assets/*.html'
   images:         './client/assets/images/**'
+  styles:         './client/styles'
 
 files =
   app:
     js:           'application.js'
   vendor:
     js:           'vendor.js'
+
 
 args = watchify.args
 args.extensions = ['.coffee']
@@ -43,6 +46,11 @@ gulp.task 'vendor', ->
     .pipe concat(files.vendor.js)
     .pipe gulp.dest(paths.public)
 
+gulp.task 'sass', ->
+  gulp.src "#{paths.styles}/app.sass"
+    .pipe sass(errLogToConsole: true, sourceComments: 'normal', indentedSyntax: 'true')
+    .pipe gulp.dest(paths.public)
+
 gulp.task 'assets', ->
   gulp.src paths.html
     .pipe gulp.dest(paths.public)
@@ -54,6 +62,7 @@ gulp.task 'watch', ->
   gulp.watch paths.scripts, ['scripts']
   gulp.watch paths.vendor, ['vendor']
   gulp.watch paths.assets, ['assets']
+  gulp.watch paths.styles, ['sass']
 
 gulp.task 'server', ->
   nodemon( script: 'server/main.coffee')
@@ -65,4 +74,5 @@ gulp.task 'default', [
   'assets'
   'scripts'
   'vendor'
+  'sass'
 ]
