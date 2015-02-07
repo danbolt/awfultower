@@ -1,6 +1,12 @@
-Game = require './game'
+Preload = require './preload/load'
+Editor = require './editor'
 
 class Application
-  @init: ->
+  init: ->
+    Preload.start @loadComplete
 
-Application.init()
+  loadComplete: =>
+    @editor = new Editor @
+
+app = new Application()
+app.init()

@@ -1,6 +1,6 @@
 Preload = require '../preload/load'
-LevelData = require '../level_data'
-Tile = require '../tile'
+LevelData = require './lib/level_data'
+Tile = require './lib/tile'
 
 MOVE_DISTANCE =  LevelData.tileWidth
 GRID_COLOR = "#e5e5e5"

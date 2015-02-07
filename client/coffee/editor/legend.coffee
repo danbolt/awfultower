@@ -1,5 +1,5 @@
 Preload = require '../preload/load'
-LevelData = require '../level_data'
+LevelData = require './lib/level_data'
 
 module.exports = class Legend extends createjs.Container
   constructor: (@delegate) ->

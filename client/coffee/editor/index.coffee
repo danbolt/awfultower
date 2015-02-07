@@ -1,9 +1,8 @@
 Scene = require '../scene'
 Legend = require './legend'
 Canvas = require './canvas'
-LevelData = require '../level_data'
+LevelData = require './lib/level_data'
 Preload = require '../preload/load'
-BrushControls = require './brush_controls'
 
 GRID_COLOR = "#e5e5e5"
 
@@ -41,16 +40,6 @@ module.exports = class Editor
   update: =>
     @canvas.update()
 
-  addBrushControls: ->
-    @brushControls = new BrushControls(@)
-
-    @brushControls.x = 10
-    @brushControls.y = 400
-    @addChild @brushControls
-
   tileSelected: (index) =>
     @canvas.tile = index
-
-  brushSelected: (brush) =>
-   @canvas.brush = brush
 
