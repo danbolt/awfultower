@@ -1,3 +1,4 @@
+$dropdownActive: #222
 #header
   background-color: $nav-color
   width: 100%
@@ -15,30 +16,27 @@
 
   .menu-item
     &:hover, &.open
-      background-color: $nav-color
-      border-color: $nav-color
+      background-color: $dropdownActive
+      border-color: $dropdownActive
 
-      color: $highlight
+    > i
+      margin-left: 10px
 
   .dropdown-list
-    background-color: $nav-color
-    border-color: $nav-color
+    background-color: $dropdownActive
+    border-color: $dropdownActive
 
     li
+      padding-left: 10px
       &:hover
         color: $highlight
 
     i
       margin-right: 10px
 
-  li > i
-    margin-left: 10px
-
   .control
     cursor: pointer
     &:hover
-      i
-        color: $highlight
-
+      background-color: $dropdownActive
     i.active
       color: $highlight
