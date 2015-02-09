@@ -32,10 +32,14 @@ module.exports = class extends createjs.Container
         @redo()
       if e.keyCode is 71
         @_G_DOWN = true
+      if e.keyCode is 16
+        @_SHIFT_DOWN = true
 
     $(window).keyup (e) =>
       if e.keyCode is 68
         @delete = false
+      if e.keyCode is 16
+        @_SHIFT_DOWN = false
 
     # Tile map!
     data =
@@ -109,6 +113,8 @@ module.exports = class extends createjs.Container
   stageMouseUp: (e) =>
     @mouseDown = false
 
+    @lastMouseDown = @gridCoords(e.rawX, e.rawY)
+
   stageMouseDown: (e) =>
     @mouseDown = true
     @addTiles(e.rawX, e.rawY)
@@ -143,10 +149,27 @@ module.exports = class extends createjs.Container
       _x = @brush.x * @brushSize
       _y = @brush.y * @brushSize
 
+    tilesToAdd = []
+
     for i in [-_x.._x]
       for j in [-_y.._y]
-        if @delete then @removeTile(x+i, y+j)
-        else @addTile(x+i, y+j, @tile)
+        tilesToAdd.push(x: x+i, y: y+j)
+
+    if @_SHIFT_DOWN and @lastMouseDown
+      if y is @lastMouseDown.y
+        for i in [x..@lastMouseDown.x]
+          for j in [-_y.._y]
+            tilesToAdd.push(x: i, y: y+j) unless {x: i, y: y+j} in tilesToAdd
+
+      else if x is @lastMouseDown.x
+        for i in [-_x.._x]
+          for j in [y..@lastMouseDown.y]
+            tilesToAdd.push(x: x+i, y: j) unless {x: x+i, y: j} in tilesToAdd
+
+    for tile in tilesToAdd
+      if @delete then @removeTile(tile.x,tile.y)
+      else @addTile(tile.x, tile.y, @tile)
+
 
   addTile: (x, y, index, recordHistory = true) ->
     return if @worldCoords(x, y).x < @x
