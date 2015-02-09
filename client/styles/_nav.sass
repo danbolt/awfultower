@@ -1,0 +1,44 @@
+#header
+  background-color: $nav-color
+  width: 100%
+
+  margin-bottom: $padding
+
+  color: $white
+
+  > *:nth-child(n+2)
+    margin-left: $padding
+
+
+  a, button, li
+    color: $white
+
+  .menu-item
+    &:hover, &.open
+      background-color: $nav-color
+      border-color: $nav-color
+
+      color: $highlight
+
+  .dropdown-list
+    background-color: $nav-color
+    border-color: $nav-color
+
+    li
+      &:hover
+        color: $highlight
+
+    i
+      margin-right: 10px
+
+  li > i
+    margin-left: 10px
+
+  .control
+    cursor: pointer
+    &:hover
+      i
+        color: $highlight
+
+    i.active
+      color: $highlight

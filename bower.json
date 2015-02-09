@@ -6,7 +6,10 @@
     "jquery": "~2.1",
     "underscore": "~1.6",
     "EaselJS": "0.8.0",
-    "PreloadJS": "0.6.0"
+    "PreloadJS": "0.6.0",
+    "react": "~0.12.2",
+    "fontawesome": "~4.3.0",
+    "normalize.css": "~3.0.2"
   },
   "overrides": {
     "underscore": {

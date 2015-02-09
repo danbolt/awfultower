@@ -3,6 +3,7 @@ coffee =          require 'gulp-coffee'
 concat =          require 'gulp-concat'
 gutil =           require 'gulp-util'
 sass =            require 'gulp-sass'
+filter =          require 'gulp-filter'
 del =             require 'del'
 browserify =      require 'browserify'
 watchify =        require 'watchify'
@@ -16,7 +17,7 @@ paths =
   vendor:         './vendor'
   html:           './client/assets/*.html'
   images:         './client/assets/images/**'
-  styles:         './client/styles'
+  styles:         './client/styles/**'
 
 files =
   app:
@@ -24,12 +25,11 @@ files =
   vendor:
     js:           'vendor.js'
 
-
 args = watchify.args
-args.extensions = ['.coffee']
+args.extensions = ['.coffee', '.cjsx']
 
 bundler = watchify(browserify paths.scripts + '/application.coffee', args)
-bundler.transform 'coffeeify'
+bundler.transform 'coffee-reactify'
 
 bundle = ->
   bundler.bundle()
@@ -42,13 +42,20 @@ bundler.on 'update', bundle
 gulp.task 'scripts', bundle
 
 gulp.task 'vendor', ->
-  gulp.src bower()
+
+  gulp.src bower().concat("vendor/*.js")
+    .pipe filter("**/*.js")
     .pipe concat(files.vendor.js)
+    .pipe gulp.dest(paths.public)
+
+  gulp.src bower().concat("vendor/*.css")
+    .pipe filter("**.*.css")
+    .pipe concat("vendor.css")
     .pipe gulp.dest(paths.public)
 
 gulp.task 'sass', ->
   gulp.src "#{paths.styles}/app.sass"
-    .pipe sass(errLogToConsole: true, sourceComments: 'normal', indentedSyntax: 'true')
+    .pipe sass(errLogToConsole: true, sourceComments: 'normal', indentedSyntax: 'true', loadPath: [__dirname + '/bower_components/fontawesome/scss/'])
     .pipe gulp.dest(paths.public)
 
 gulp.task 'assets', ->
@@ -68,6 +75,10 @@ gulp.task 'server', ->
   nodemon( script: 'server/main.coffee')
     .on 'restart', -> console.log "Server restarted"
 
+gulp.task 'icons', ->
+  gulp.src  'bower_components/fontawesome/fonts/**.*'
+    .pipe(gulp.dest('./public/fonts')); 
+
 gulp.task 'default', [
   'server'
   'watch'
@@ -75,4 +86,5 @@ gulp.task 'default', [
   'scripts'
   'vendor'
   'sass'
+  'icons'
 ]

@@ -1,6 +1,7 @@
 Preload = require '../preload/load'
 LevelData = require './lib/level_data'
 Tile = require './lib/tile'
+em = require '../event_manager'
 
 MOVE_DISTANCE =  LevelData.tileWidth
 GRID_COLOR = "#e5e5e5"
@@ -48,6 +49,17 @@ module.exports = class extends createjs.Container
 
     @tilesheet = new createjs.SpriteSheet data
 
+    em.register em.types.brushChanged, (type) =>
+      @brush = switch type
+        when "square"
+          {x: 0, y: 0}
+        when "horizontal"
+          {x: 1, y: 0}
+        when "vertical"
+          {x: 0, y: 1}
+    em.register em.types.toggleGrid, (gridOn) =>
+      @gridOn = gridOn
+      @toggleGrid = true
 
     $(window).keydown _.partial(@panKeyChanged, true, _)
     $(window).keyup _.partial(@panKeyChanged, false, _)
@@ -109,10 +121,9 @@ module.exports = class extends createjs.Container
     @addTiles(e.rawX, e.rawY)
 
   update: ->
-    if @_G_DOWN
-      @gridOn = not @gridOn
+    if @toggleGrid
       @grid.visible = @gridOn
-      @_G_DOWN = false
+      @toggleGrid = false
 
     if @left
       @move x: -MOVE_DISTANCE

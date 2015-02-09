@@ -1,4 +1,3 @@
-Scene = require '../scene'
 Legend = require './legend'
 Canvas = require './canvas'
 LevelData = require './lib/level_data'
