@@ -1,6 +1,7 @@
 Preload = require '../preload/load'
 LevelData = require './lib/level_data'
 Tile = require './lib/tile'
+Undo = require './undo'
 em = require '../event_manager'
 
 MOVE_DISTANCE =  LevelData.tileWidth
@@ -19,10 +20,6 @@ module.exports = class extends createjs.Container
     # BrushSize is how far out it goes in each direction
     @brush = x: 0, y: 0
     @brushSize = 1
-
-    @undoHistory = []
-    @redoHistory = []
-    @activeHistory = null
 
     @gridOn = true
 
@@ -111,12 +108,8 @@ module.exports = class extends createjs.Container
 
   stageMouseUp: (e) =>
     @mouseDown = false
-    @undoHistory.push @activeHistory
-    @activeHistory = null
 
   stageMouseDown: (e) =>
-    @activeHistory = []
-    @redoHistory = []
     @mouseDown = true
     @addTiles(e.rawX, e.rawY)
 
@@ -155,7 +148,7 @@ module.exports = class extends createjs.Container
         if @delete then @removeTile(x+i, y+j)
         else @addTile(x+i, y+j, @tile)
 
-  addTile: (x, y, index) ->
+  addTile: (x, y, index, recordHistory = true) ->
     return if @worldCoords(x, y).x < @x
     @tiles[x] ||= {}
 
@@ -164,16 +157,19 @@ module.exports = class extends createjs.Container
 
     if tile then @removeChild(tile)
 
+    oldIndex = @tiles[x][y]?.tile
     @tiles[x][y] = t
     @addChild t
 
-    @activeHistory.push t
+    Undo.push("+", t, oldIndex) if recordHistory
 
-  removeTile: (x, y) ->
+  removeTile: (x, y, recordHistory = true) ->
     tile = @tiles[x]?[y]
     if tile
       @removeChild(tile)
       delete @tiles[x][y]
+
+      Undo.push("-", tile) if recordHistory
 
   move: (direction) =>
     left = @regX / @tileWidth
@@ -196,20 +192,19 @@ module.exports = class extends createjs.Container
     @regX += direction.x if direction.x
     @regY += direction.y if direction.y
 
-
   undo: ->
-    return unless (tiles = @undoHistory.pop())
-    @redoHistory.push tiles
-    for tile in tiles
-      @removeTile(tile.pos.x, tile.pos.y)
+    return unless (undo = Undo.undo())
+    if undo.action is '+'
+      @addTile undo.x, undo.y, undo.tile, false
+    else if undo.action is '-'
+      @removeTile undo.x, undo.y, false
 
   redo: ->
-    return unless (tiles = @redoHistory.pop())
-    @activeHistory = []
-    for tile in tiles
-      @addTile(tile.pos.x, tile.pos.y, 0)
-    @undoHistory.push @activeHistory
-    @activeHistory = []
+    return unless (redo = Undo.redo())
+    if redo.action is '+'
+      @addTile redo.x, redo.y, redo.tile, false
+    else if redo.action is '-'
+      @removeTile redo.x, redo.y, false
 
   # Where in pixel values should the tile be
   worldCoords: (x, y) ->
