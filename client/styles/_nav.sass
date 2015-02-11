@@ -1,42 +1,28 @@
-$dropdownActive: #222
-#header
+
+#hud
   background-color: $nav-color
-  width: 100%
+  width: $nav-width
+  position: absolute
+  top: 0
+  left: 0
+  bottom: 0
 
-  margin-bottom: $padding
+  li
+    width: 100%
+    height: $nav-width
+    line-height: $nav-width
+    text-align: center
 
-  color: $white
+    &.control
+      color: $white
+      cursor: pointer
 
-  > *:nth-child(n+2)
-    margin-left: $padding
-
-
-  a, button, li
-    color: $white
-
-  .menu-item
-    &:hover, &.open
-      background-color: $dropdownActive
-      border-color: $dropdownActive
-
-    > i
-      margin-left: 10px
-
-  .dropdown-list
-    background-color: $dropdownActive
-    border-color: $dropdownActive
-
-    li
-      padding-left: 10px
-      &:hover
+      &.active
         color: $highlight
 
-    i
-      margin-right: 10px
+      &:hover
+        background-color: $darkHighlight
 
-  .control
-    cursor: pointer
-    &:hover
-      background-color: $dropdownActive
-    i.active
-      color: $highlight
+    &.logo
+      background-color: $highlight
+      color: $white

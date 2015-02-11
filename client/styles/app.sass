@@ -8,15 +8,30 @@ body
   margin: 0
   background-color: #585858
   font-family: 'Open Sans', sans-serif
+  color: $white
 
 canvas
   display: inine-block
 
 #scene-canvas
   background-color: SkyBlue
-  margin-right: $padding
+  margin-left: $nav_width * 2
+  margin-top: 32px
 
-#legend-canvas
-  margin-left: $padding
+#panels
+  margin-left: $nav-width
+  display: inline-block
+  vertical-align: top
+
+.panel
+  vertical-align: top
+
+  h2
+    margin: 0
+    padding: 6px 10px
+    font-size: 16px
+    background-color: $darkHighlight
+
+  margin-top: 32px
 
 @import 'nav'
