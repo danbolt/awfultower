@@ -20,7 +20,7 @@ module.exports = class Editor
 
     $(window).keydown (e) =>
       if 48 < e.keyCode <= 57 # 48 is 0, 57 is 9
-        @canvas.brushSize = e.keyCode - 48
+        @canvas.changeBrushSize e.keyCode - 48
 
     @sceneStage.on 'stagemousedown', @canvas.stageMouseDown
     @sceneStage.on 'stagemouseup', @canvas.stageMouseUp
@@ -40,5 +40,5 @@ module.exports = class Editor
     @canvas.update()
 
   tileSelected: (index) =>
-    @canvas.tile = index
+    @canvas.changeTile index
 

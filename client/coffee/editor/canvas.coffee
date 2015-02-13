@@ -16,9 +16,7 @@ module.exports = class extends createjs.Container
 
     @tileWidth = LevelData.tileWidth
     @tileHeight = LevelData.tileHeight
-    # Brush is the type, square, horizontal, vertical
-    # BrushSize is how far out it goes in each direction
-    @brush = x: 0, y: 0
+
     @brushSize = 1
 
     @gridOn = true
@@ -50,17 +48,7 @@ module.exports = class extends createjs.Container
 
     @tilesheet = new createjs.SpriteSheet data
 
-    em.register em.types.brushChanged, (type) =>
-      @brush = switch type
-        when "square"
-          {x: 0, y: 0}
-        when "horizontal"
-          {x: 1, y: 0}
-        when "vertical"
-          {x: 0, y: 1}
-    em.register em.types.toggleGrid, (gridOn) =>
-      @gridOn = gridOn
-      @toggleGrid = true
+    em.register em.types.toggleGrid, @toggleGrid
 
     $(window).keydown _.partial(@panKeyChanged, true, _)
     $(window).keyup _.partial(@panKeyChanged, false, _)
@@ -69,6 +57,10 @@ module.exports = class extends createjs.Container
       @width = @stage.canvas.width
       @addHighlight()
       @addGrid()
+
+  toggleGrid: (gridOn) =>
+    @gridOn = gridOn
+    @toggleGrid = true
 
   panKeyChanged: (down, e) =>
     if e.keyCode is 72
@@ -80,35 +72,53 @@ module.exports = class extends createjs.Container
     else if e.keyCode is 75
       @down = down
 
-  # This is the square that highlights which cell you are on
-  addHighlight: =>
+  changeBrushSize: (size) ->
+    @brushSize = size
+    @addHighlight()
 
-    if @brush.x is 0 and @brush.y is 0
-      _x = _y = @brushSize - 1
-    else
-      _x = @brush.x * @brushSize
-      _y = @brush.y * @brushSize
-
-    return if @stage.mouseX - _x*@tileWidth < @x
-
-    @removeChild(@selection) if @selection
+  moveHighlight: ->
 
     {x,y} = @gridCoords(@stage.mouseX, @stage.mouseY)
     x *= @tileWidth
     y *= @tileHeight
 
-    x -= _x * @tileWidth
-    y -= _y * @tileWidth
+    @selection.x = x - (@tileWidth * (@brushSize-1))
+    @selection.y = y - (@tileHeight * (@brushSize-1))
 
-    w = @tileWidth * (1+_x*2)
-    h = @tileHeight * (1+_y*2)
+  # This is the square that highlights which cell you are on
+  addHighlight: =>
+
+    @removeChild(@selection) if @selection
+
+    x = Math.floor(@stage.mouseX / @tileWidth) * @tileWidth
+    y = Math.floor(@stage.mouseY / @tileHeight) * @tileHeight
+
+    index = @tile
+
+    @selection = new createjs.Container()
+
+    for i in [0..(@brushSize - 1)*2]
+      for j in [0..(@brushSize - 1)*2]
+        tile = new Tile(i, j, index, @tilesheet)
+        tile.alpha = 0.3
+        @selection.addChild tile
+
+    @selection.x = x - (@tileWidth * ( @brushSize - 1) )
+    @selection.y = y - (@tileHeight * ( @brushSize - 1) )
 
     g = new createjs.Graphics()
     g.beginStroke("black")
-    g.setStrokeStyle(1)
-    g.drawRect(x, y, w, h)
-    @selection = new createjs.Shape(g)
+    g.setStrokeStyle(2)
+    g.drawRect(0, 0, (@tileWidth * ((@brushSize - 1)*2 + 1)), (@tileHeight * ((@brushSize - 1)*2 + 1)))
+    border = new createjs.Shape(g)
+
+    @selection.addChild border
+
     @addChild(@selection)
+
+  changeTile: (index) ->
+    @tile = index
+    @addHighlight()
 
   stageMouseUp: (e) =>
     @mouseDown = false
@@ -137,17 +147,13 @@ module.exports = class extends createjs.Container
 
     {x,y} = @gridCoords(@stage.mouseX, @stage.mouseY)
 
-    @addHighlight()
+    @moveHighlight()
 
   addTiles: (mouseX, mouseY) ->
 
     {x,y} = @gridCoords(mouseX, mouseY)
 
-    if @brush.x is 0 and @brush.y is 0
-      _x = _y = @brushSize - 1
-    else
-      _x = @brush.x * @brushSize
-      _y = @brush.y * @brushSize
+    _x = _y = @brushSize - 1
 
     tilesToAdd = []
 
