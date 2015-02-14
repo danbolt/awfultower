@@ -1,31 +1,23 @@
 em = require '../event_manager'
+Layer = require './layer'
 
 module.exports = React.createClass
   displayName: "Layers Panel"
 
   getInitialState: ->
     layers: ["layer 1"]
+    currentLayer: "layer 1"
+
+  layerSelected: (layer) ->
+    @setState(currentLayer: layer) if layer in @state.layers
 
   addLayer: ->
-    console.log "ASD"
     layers = @state.layers
     layer = "layer #{layers.length + 1}"
     layers.push layer
 
     @setState layers: layers, ->
       em.call 'add-layer', [layer]
-
-  changeLayer: (e) ->
-    layer = $(e.target).closest('li').data('name')
-    em.call 'change-layer', [layer]
-
-  hideLayer: (e) ->
-    layer = $(e.target).closest('li').data('name')
-    em.call 'hide-layer', [layer]
-
-  lockLayer: (e) ->
-    layer = $(e.target).closest('li').data('name')
-    em.call 'lock-layer', [layer]
 
   render: ->
     <div className="panel layers">
@@ -37,13 +29,9 @@ module.exports = React.createClass
       <ul>
         {
           for layer in @state.layers
-            <li className="layer" key={layer} onClick={@changeLayer} data-name={layer}>
-              {layer}
-              <div className="controls">
-                <i className="fa fa-eye" onClick={@hideLayer} />
-                <i className="fa fa-lock" onClick={@lockLayer} />
-              </div>
-            </li>
+            current = layer is @state.currentLayer
+            <Layer name={layer} key={layer} current={current} layerSelected={@layerSelected}/>
+
         }
       </ul>
     </div>

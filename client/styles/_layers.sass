@@ -4,18 +4,40 @@
 
   .layer
     color: $darkHighlight
-    padding: 2px 10px
+    padding: 4px 10px
+    cursor: pointer
 
     .controls
       display: inline-block
       float: right
       padding-right: 10px
-      cursor: pointer
 
-      i:nth-child(n+2)
+      div
+        display: inline-block
+
+      div:nth-child(n+2)
         margin-left: 6px
+
+    &.hidden .visibility
+      color: $highlight
+
+    &.locked .locked
+      color: $highlight
+
+    &.current
+      background-color: $highlight
+
+      &.hidden .visibility
+        color: white
+
+      &.locked .locked
+        color: white
+
 
   .add-layer
     float: right
     margin-right: 10px
     color: white
+
+    &:hover
+      color: $highlight
