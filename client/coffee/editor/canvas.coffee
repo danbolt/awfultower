@@ -1,6 +1,7 @@
 Preload = require '../preload/load'
 Tile = require './lib/tile'
 Undo = require './undo'
+Layer = require './lib/layer'
 em = require '../event_manager'
 
 {tileWidth, tileHeight} = require './utils'
@@ -9,13 +10,11 @@ MOVE_DISTANCE =  tileWidth
 GRID_COLOR = "#e5e5e5"
 
 class Canvas extends createjs.Container
-  constructor: () ->
+  constructor: ->
     super
 
   init: ->
     @tile = 0
-
-    @tiles = {}
 
     @brushSize = 1
 
@@ -25,6 +24,10 @@ class Canvas extends createjs.Container
     em.register 'keyup', @keyup
     em.register 'toggle-grid', @toggleGrid
     em.register 'toggle-erase', @toggleErase
+    em.register 'add-layer', @addLayer
+    em.register 'change-layer', @changeLayer
+    em.register 'hide-layer', @hideLayer
+    em.register 'lock-layer', @lockLayer
 
     # Tile map!
     data =
@@ -39,6 +42,24 @@ class Canvas extends createjs.Container
       @width = @stage.canvas.width
       @addHighlight()
       @addGrid()
+
+    @layers = {}
+
+  lockLayer: (name) =>
+    return unless (layer = @layers[name])
+    layer.locked = not layer.locked
+
+  hideLayer: (name) =>
+    return unless (layer = @layers[name])
+    layer.visible = not layer.visible
+
+  changeLayer: (name) =>
+    @currentLayer = @layers[name] if @layers[name]
+
+  addLayer: (name) =>
+    @currentLayer = new Layer(@, name)
+    @layers[name] = @currentLayer
+    @addChild(@currentLayer)
 
   keydown: (e) =>
     switch e.keyCode
@@ -129,7 +150,7 @@ class Canvas extends createjs.Container
 
   stageMouseDown: (e) =>
     @mouseDown = true
-    @addTiles(e.rawX, e.rawY)
+    @currentLayer?.addTiles(e.rawX, e.rawY)
 
   update: ->
     if @toggleGrid
@@ -145,62 +166,9 @@ class Canvas extends createjs.Container
     else if @down
       @move y: -MOVE_DISTANCE
     if @mouseDown
-      @addTiles(@stage.mouseX, @stage.mouseY)
-
-    {x,y} = @gridCoords(@stage.mouseX, @stage.mouseY)
+      @currentLayer?.addTiles(@stage.mouseX, @stage.mouseY)
 
     @moveHighlight()
-
-  addTiles: (mouseX, mouseY) ->
-
-    {x,y} = @gridCoords(mouseX, mouseY)
-
-    _x = _y = @brushSize - 1
-
-    tilesToAdd = []
-
-    for i in [-_x.._x]
-      for j in [-_y.._y]
-        tilesToAdd.push(x: x+i, y: y+j)
-
-    if @_SHIFT_DOWN and @lastMouseDown
-      if y is @lastMouseDown.y
-        for i in [x..@lastMouseDown.x]
-          for j in [-_y.._y]
-            tilesToAdd.push(x: i, y: y+j) unless {x: i, y: y+j} in tilesToAdd
-
-      else if x is @lastMouseDown.x
-        for i in [-_x.._x]
-          for j in [y..@lastMouseDown.y]
-            tilesToAdd.push(x: x+i, y: j) unless {x: x+i, y: j} in tilesToAdd
-
-    for tile in tilesToAdd
-      if @erase then @removeTile(tile.x,tile.y)
-      else @addTile(tile.x, tile.y, @tile)
-
-
-  addTile: (x, y, index, recordHistory = true) ->
-    return if @worldCoords(x, y).x < @x
-    @tiles[x] ||= {}
-
-    return if (tile = @tiles[x][y])?.tile is index
-    t = new Tile(x, y, index, @tilesheet)
-
-    if tile then @removeChild(tile)
-
-    oldIndex = @tiles[x][y]?.tile
-    @tiles[x][y] = t
-    @addChild t
-
-    Undo.push("+", t, oldIndex) if recordHistory
-
-  removeTile: (x, y, recordHistory = true) ->
-    tile = @tiles[x]?[y]
-    if tile
-      @removeChild(tile)
-      delete @tiles[x][y]
-
-      Undo.push("-", tile) if recordHistory
 
   move: (direction) =>
     left = @regX / tileWidth
@@ -226,16 +194,16 @@ class Canvas extends createjs.Container
   undo: ->
     return unless (undo = Undo.undo())
     if undo.action is '+'
-      @addTile undo.x, undo.y, undo.tile, false
+      @currentLayer.addTile undo.x, undo.y, undo.tile, false
     else if undo.action is '-'
-      @removeTile undo.x, undo.y, false
+      @currentLayer.removeTile undo.x, undo.y, false
 
   redo: ->
     return unless (redo = Undo.redo())
     if redo.action is '+'
-      @addTile redo.x, redo.y, redo.tile, false
+      @currentLayer.addTile redo.x, redo.y, redo.tile, false
     else if redo.action is '-'
-      @removeTile redo.x, redo.y, false
+      @currentLayer.removeTile redo.x, redo.y, false
 
   addGrid: ->
     @grid = new createjs.Container()

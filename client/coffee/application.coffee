@@ -13,6 +13,7 @@ class Application
 
   loadComplete: =>
     @editor = new Editor @
+    em.call "add-layer", ["layer 1"]
 
 app = new Application()
 app.init()
