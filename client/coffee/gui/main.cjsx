@@ -1,6 +1,8 @@
 Nav = require './nav'
+Layers = require './layers'
 
 module.exports = React.createClass
+  displayName: "Main"
   render: ->
     <div>
       <Nav />
@@ -11,10 +13,7 @@ module.exports = React.createClass
           <canvas id="legend-canvas" width="256" height="320"></canvas>
         </div>
 
-        <div className="panel layers">
-          <h2> LAYERS </h2>
-          <canvas height="200" width="256" style={{border: "solid 2px black", "background-color":"white"}}> </canvas>
-        </div>
+        <Layers />
 
       </section>
     </div>

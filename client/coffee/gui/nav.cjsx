@@ -1,6 +1,7 @@
 em = require '../event_manager'
 
 module.exports = React.createClass
+  displayName: "Nav"
   getInitialState: ->
     gridOn: true
 
@@ -8,7 +9,7 @@ module.exports = React.createClass
     gridOn = not @state.gridOn
     @setState gridOn: gridOn
 
-    em.call em.types.toggleGrid, [gridOn]
+    em.call 'toggle-grid', [gridOn]
 
   renderGrid: ->
     cx = "control fa fa-table"

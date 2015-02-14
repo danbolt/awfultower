@@ -1,10 +1,11 @@
 Preload = require '../preload/load'
-LevelData = require './lib/level_data'
 Tile = require './lib/tile'
 Undo = require './undo'
 em = require '../event_manager'
 
-MOVE_DISTANCE =  LevelData.tileWidth
+{tileWidth, tileHeight} = require './utils'
+
+MOVE_DISTANCE =  tileWidth
 GRID_COLOR = "#e5e5e5"
 
 module.exports = class extends createjs.Container
@@ -14,53 +15,49 @@ module.exports = class extends createjs.Container
 
     @tiles = {}
 
-    @tileWidth = LevelData.tileWidth
-    @tileHeight = LevelData.tileHeight
-
     @brushSize = 1
 
     @gridOn = true
 
-    $(window).keydown (e) =>
-      if e.keyCode is 68
-        @delete = true
-      else if e.keyCode is 85
-        @undo()
-      else if e.keyCode is 82
-        @redo()
-      if e.keyCode is 71
-        @_G_DOWN = true
-      if e.keyCode is 16
-        @_SHIFT_DOWN = true
-
-    $(window).keyup (e) =>
-      if e.keyCode is 68
-        @delete = false
-      if e.keyCode is 16
-        @_SHIFT_DOWN = false
+    em.register 'keydown', @keydown
+    em.register 'keyup', @keyup
+    em.register 'toggle-grid', @toggleGrid
 
     # Tile map!
     data =
       images: [Preload.loader.getResult('level')]
       frames:
-        width: @tileWidth
-        height: @tileHeight
+        width: tileWidth
+        height: tileHeight
 
     @tilesheet = new createjs.SpriteSheet data
-
-    em.register em.types.toggleGrid, @toggleGrid
-
-    $(window).keydown _.partial(@panKeyChanged, true, _)
-    $(window).keyup _.partial(@panKeyChanged, false, _)
 
     @on 'added', ->
       @width = @stage.canvas.width
       @addHighlight()
       @addGrid()
 
-  toggleGrid: (gridOn) =>
-    @gridOn = gridOn
-    @toggleGrid = true
+  keydown: (e) =>
+    switch e.keyCode
+      when 68 # d
+        @delete = true
+      when 85 # u
+        @undo()
+      when 82 # r
+        @redo()
+      when 16 # shift
+        @_SHIFT_DOWN = true
+      when 72,74,75,76 # hjkl
+        @panKeyChanged(true, e)
+
+  keyup: (e) =>
+    switch e.keyCode
+      when 68
+        @delete = false
+      when 16
+        @_SHIFT_DOWN = false
+      when 72,74,75,76
+        @panKeyChanged(false, e)
 
   panKeyChanged: (down, e) =>
     if e.keyCode is 72
@@ -72,6 +69,10 @@ module.exports = class extends createjs.Container
     else if e.keyCode is 75
       @down = down
 
+  toggleGrid: (gridOn) =>
+    @gridOn = gridOn
+    @toggleGrid = true
+
   changeBrushSize: (size) ->
     @brushSize = size
     @addHighlight()
@@ -79,19 +80,19 @@ module.exports = class extends createjs.Container
   moveHighlight: ->
 
     {x,y} = @gridCoords(@stage.mouseX, @stage.mouseY)
-    x *= @tileWidth
-    y *= @tileHeight
+    x *= tileWidth
+    y *= tileHeight
 
-    @selection.x = x - (@tileWidth * (@brushSize-1))
-    @selection.y = y - (@tileHeight * (@brushSize-1))
+    @selection.x = x - (tileWidth * (@brushSize-1))
+    @selection.y = y - (tileHeight * (@brushSize-1))
 
   # This is the square that highlights which cell you are on
   addHighlight: =>
 
     @removeChild(@selection) if @selection
 
-    x = Math.floor(@stage.mouseX / @tileWidth) * @tileWidth
-    y = Math.floor(@stage.mouseY / @tileHeight) * @tileHeight
+    x = Math.floor(@stage.mouseX / tileWidth) * tileWidth
+    y = Math.floor(@stage.mouseY / tileHeight) * tileHeight
 
     index = @tile
 
@@ -103,13 +104,13 @@ module.exports = class extends createjs.Container
         tile.alpha = 0.3
         @selection.addChild tile
 
-    @selection.x = x - (@tileWidth * ( @brushSize - 1) )
-    @selection.y = y - (@tileHeight * ( @brushSize - 1) )
+    @selection.x = x - (tileWidth * ( @brushSize - 1) )
+    @selection.y = y - (tileHeight * ( @brushSize - 1) )
 
     g = new createjs.Graphics()
     g.beginStroke("black")
     g.setStrokeStyle(2)
-    g.drawRect(0, 0, (@tileWidth * ((@brushSize - 1)*2 + 1)), (@tileHeight * ((@brushSize - 1)*2 + 1)))
+    g.drawRect(0, 0, (tileWidth * ((@brushSize - 1)*2 + 1)), (tileHeight * ((@brushSize - 1)*2 + 1)))
     border = new createjs.Shape(g)
 
     @selection.addChild border
@@ -201,8 +202,8 @@ module.exports = class extends createjs.Container
       Undo.push("-", tile) if recordHistory
 
   move: (direction) =>
-    left = @regX / @tileWidth
-    right = (Math.floor(@width / @tileWidth) * @tileWidth + @regX) / @tileWidth
+    left = @regX / tileWidth
+    right = (Math.floor(@width / tileWidth) * tileWidth + @regX) / tileWidth
 
     if direction.x > 0
       if @tiles[left] then for y, tile of @tiles[left]
@@ -235,20 +236,11 @@ module.exports = class extends createjs.Container
     else if redo.action is '-'
       @removeTile redo.x, redo.y, false
 
-  # Where in pixel values should the tile be
-  worldCoords: (x, y) ->
-    x: (x * @tileWidth) + @x - @regX
-    y: (y * @tileWidth) + @y - @regX
-
-  # Where in the tilemap should the tile be
-  gridCoords: (x,y) ->
-    x:  Math.floor((x + @regX - @x) / @tileWidth)
-    y:  Math.floor((y + @regY - @y) / @tileHeight)
 
   addGrid: ->
     @grid = new createjs.Container()
 
-    for i in [0..@stage.canvas.width] by @tileWidth
+    for i in [0..@stage.canvas.width] by tileWidth
 
       line = new createjs.Shape()
       line.graphics.setStrokeStyle(1)
@@ -258,7 +250,7 @@ module.exports = class extends createjs.Container
       @grid.addChild(line)
 
 
-    for i in [0..@stage.canvas.height] by @tileHeight
+    for i in [0..@stage.canvas.height] by tileHeight
 
       line = new createjs.Shape()
       line.graphics.setStrokeStyle(1)
@@ -268,3 +260,13 @@ module.exports = class extends createjs.Container
       @grid.addChild(line)
 
     @stage.addChild(@grid)
+
+  # Where in pixel values should the tile be
+  worldCoords: (x, y) ->
+    x: (x * tileWidth) + @x - @regX
+    y: (y * tileWidth) + @y - @regX
+
+  # Where in the tilemap should the tile be
+  gridCoords: (x,y) ->
+    x:  Math.floor((x + @regX - @x) / tileWidth)
+    y:  Math.floor((y + @regY - @y) / tileHeight)

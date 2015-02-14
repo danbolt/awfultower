@@ -1,9 +1,6 @@
 class EventManager
   constructor: ->
     @events = {}
-    @types =
-      brushChanged: "brush-changed"
-      toggleGrid: "toggle-grid"
 
   register: (type, callback) ->
     @events[type] ||= []
