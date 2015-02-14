@@ -12,16 +12,15 @@ module.exports = class Editor
     @sceneStage = new createjs.Stage 'scene-canvas'
 
     @legend = new Legend(@)
-    @canvas = new Canvas(@)
-
+    Canvas.init()
 
     @legendStage.addChild @legend
-    @sceneStage.addChild @canvas
+    @sceneStage.addChild Canvas
 
     em.register 'keydown', @keydown
 
-    @sceneStage.on 'stagemousedown', @canvas.stageMouseDown
-    @sceneStage.on 'stagemouseup', @canvas.stageMouseUp
+    @sceneStage.on 'stagemousedown', Canvas.stageMouseDown
+    @sceneStage.on 'stagemouseup', Canvas.stageMouseUp
 
     # @addBrushControls()
     # @addGrid()
@@ -34,11 +33,11 @@ module.exports = class Editor
 
   keydown: (e) =>
     if 48 < e.keyCode <= 57 # 48 is 0, 57 is 9
-      @canvas.changeBrushSize e.keyCode - 48
+      Canvas.changeBrushSize e.keyCode - 48
 
   update: =>
-    @canvas.update()
+    Canvas.update()
 
   tileSelected: (index) =>
-    @canvas.changeTile index
+    Canvas.changeTile index
 

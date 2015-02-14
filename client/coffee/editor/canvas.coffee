@@ -8,9 +8,11 @@ em = require '../event_manager'
 MOVE_DISTANCE =  tileWidth
 GRID_COLOR = "#e5e5e5"
 
-module.exports = class extends createjs.Container
-  constructor: (@delegate) ->
+class Canvas extends createjs.Container
+  constructor: () ->
     super
+
+  init: ->
     @tile = 0
 
     @tiles = {}
@@ -22,6 +24,7 @@ module.exports = class extends createjs.Container
     em.register 'keydown', @keydown
     em.register 'keyup', @keyup
     em.register 'toggle-grid', @toggleGrid
+    em.register 'toggle-erase', @toggleErase
 
     # Tile map!
     data =
@@ -39,8 +42,6 @@ module.exports = class extends createjs.Container
 
   keydown: (e) =>
     switch e.keyCode
-      when 68 # d
-        @delete = true
       when 85 # u
         @undo()
       when 82 # r
@@ -52,8 +53,6 @@ module.exports = class extends createjs.Container
 
   keyup: (e) =>
     switch e.keyCode
-      when 68
-        @delete = false
       when 16
         @_SHIFT_DOWN = false
       when 72,74,75,76
@@ -73,12 +72,14 @@ module.exports = class extends createjs.Container
     @gridOn = gridOn
     @toggleGrid = true
 
+  toggleErase: (eraseOn) =>
+    @erase = eraseOn
+
   changeBrushSize: (size) ->
     @brushSize = size
     @addHighlight()
 
   moveHighlight: ->
-
     {x,y} = @gridCoords(@stage.mouseX, @stage.mouseY)
     x *= tileWidth
     y *= tileHeight
@@ -174,7 +175,7 @@ module.exports = class extends createjs.Container
             tilesToAdd.push(x: x+i, y: j) unless {x: x+i, y: j} in tilesToAdd
 
     for tile in tilesToAdd
-      if @delete then @removeTile(tile.x,tile.y)
+      if @erase then @removeTile(tile.x,tile.y)
       else @addTile(tile.x, tile.y, @tile)
 
 
@@ -236,7 +237,6 @@ module.exports = class extends createjs.Container
     else if redo.action is '-'
       @removeTile redo.x, redo.y, false
 
-
   addGrid: ->
     @grid = new createjs.Container()
 
@@ -270,3 +270,5 @@ module.exports = class extends createjs.Container
   gridCoords: (x,y) ->
     x:  Math.floor((x + @regX - @x) / tileWidth)
     y:  Math.floor((y + @regY - @y) / tileHeight)
+
+module.exports = new Canvas() # Export a singleton

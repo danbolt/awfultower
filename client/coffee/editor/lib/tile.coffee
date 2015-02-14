@@ -1,4 +1,4 @@
-{tileWidth, tileHeight} = require './utils'
+{tileWidth, tileHeight} = require '../utils'
 
 module.exports = class Tile extends createjs.Sprite
   constructor: (x, y, @tile, @tilesheet) ->
