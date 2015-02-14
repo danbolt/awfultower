@@ -174,19 +174,20 @@ class Canvas extends createjs.Container
     left = @regX / tileWidth
     right = (Math.floor(@width / tileWidth) * tileWidth + @regX) / tileWidth
 
-    if direction.x > 0
-      if @tiles[left] then for y, tile of @tiles[left]
-        tile.visible = false
+    for tiles in _.map(@layers, (l) -> l.tiles)
+      if direction.x > 0
+        if tiles[left] then for y, tile of tiles[left]
+          tile.visible = false
 
-      if @tiles[right+1] then for y, tile of @tiles[right+1]
-        tile.visible = true
+        if tiles[right+1] then for y, tile of tiles[right+1]
+          tile.visible = true
 
-    if direction.x < 0
-      if @tiles[left-1] then for y, tile of @tiles[left-1]
-        tile.visible = true
+      if direction.x < 0
+        if tiles[left-1] then for y, tile of tiles[left-1]
+          tile.visible = true
 
-      if @tiles[right] then for y, tile of @tiles[right]
-        tile.visible = false
+        if tiles[right] then for y, tile of tiles[right]
+          tile.visible = false
 
     @regX += direction.x if direction.x
     @regY += direction.y if direction.y
