@@ -146,7 +146,8 @@ class Canvas extends createjs.Container
     @addHighlight()
 
   recalculateMinimap: ->
-    width = height = 0
+    width = @stage.canvas.width / tileWidth
+    height = @stage.canvas.height / tileHeight
     minX = minY = 0
 
     for name, layer of @layers
@@ -156,15 +157,29 @@ class Canvas extends createjs.Container
       minX = layer.bounds.x.min if layer.bounds.x.min < minX
       minY = layer.bounds.y.min if layer.bounds.y.min < minY
 
+    minX = @regX / tileWidth if @regX / tileWidth < minX
+    minY = @regY / tileHeight if @regY / tileHeight < minY
+
     width ||= 1
     height ||= 1
 
     Minimap.update
-      width: width * tileWidth + 64
-      height: height * tileHeight + 64
+      width: width * tileWidth
+      height: height * tileHeight
       minX: minX * tileWidth
       minY: minY * tileHeight
       layers: @layers
+
+    Minimap.drawViewport
+      regX: @regX
+      regY: @regY
+      canvas:
+        width: @stage.canvas.width
+        height: @stage.canvas.height
+      width: width * tileWidth
+      height: height * tileHeight
+      minX: minX * tileWidth
+      minY: minY * tileHeight
 
   stageMouseUp: (e) =>
     @mouseDown = false
@@ -216,6 +231,8 @@ class Canvas extends createjs.Container
 
     @regX += direction.x if direction.x
     @regY += direction.y if direction.y
+
+    @recalculateMinimap()
 
   undo: ->
     return unless (undo = Undo.undo())

@@ -5,6 +5,29 @@ module.exports = class Minimap extends createjs.Container
 
   init: ->
 
+  drawViewport: (data) =>
+    {regX, regY, width, height, canvas, minX, minY} = data
+
+    sx = @stage.canvas.width / width
+    sy = @stage.canvas.height / height
+
+    @removeChild @viewport
+    g = new createjs.Graphics()
+    g.setStrokeStyle(3)
+    g.beginStroke("red")
+
+    size = Math.min canvas.width * sx, canvas.height * sy
+
+    x = (regX - minX)* sx
+    y = (regY - minY)* sy
+
+    g.drawRect(x, y, size, size)
+
+    @viewport = new createjs.Shape g
+    @addChild @viewport
+
+    @stage.update()
+
   update: (data) =>
     @removeAllChildren()
     scaleX = @stage.canvas.width / data.width
@@ -29,6 +52,7 @@ module.exports = class Minimap extends createjs.Container
       , (err) =>
         return console.log "Error adding tile in minimap.coffe: #{err}" if err
         @stage.update()
+
 
 module.exports = new Minimap()
 
