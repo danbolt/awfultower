@@ -91,6 +91,10 @@ class Canvas extends createjs.Container
     else if e.keyCode is 75
       @down = down
 
+    if not down and e.keyCode in [72, 74, 75, 76]
+      @recalculateMinimap()
+
+
   toggleGrid: (gridOn) =>
     @gridOn = gridOn
     @toggleGrid = true
@@ -163,6 +167,9 @@ class Canvas extends createjs.Container
     width ||= 1
     height ||= 1
 
+    width = Math.max(width, (Math.abs(@regX) + @stage.canvas.width) / tileWidth)
+    height = Math.max(height, (Math.abs(@regY) + @stage.canvas.height) / tileHeight)
+
     Minimap.update
       width: width * tileWidth
       height: height * tileHeight
@@ -232,7 +239,6 @@ class Canvas extends createjs.Container
     @regX += direction.x if direction.x
     @regY += direction.y if direction.y
 
-    @recalculateMinimap()
 
   undo: ->
     return unless (undo = Undo.undo())
