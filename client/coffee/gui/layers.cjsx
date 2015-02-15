@@ -16,7 +16,7 @@ module.exports = React.createClass
     layer = "layer #{layers.length + 1}"
     layers.push layer
 
-    @setState layers: layers, ->
+    @setState {layers: layers, currentLayer: layer}, ->
       em.call 'add-layer', [layer]
 
   render: ->

@@ -13,6 +13,11 @@ module.exports = React.createClass
           <canvas id="legend-canvas" width="256" height="320"></canvas>
         </div>
 
+        <div className="panel minimap">
+          <h2> MINIMAP </h2>
+          <canvas id="minimap-canvas" width="256" height="256"></canvas>
+        </div>
+
         <Layers />
 
       </section>

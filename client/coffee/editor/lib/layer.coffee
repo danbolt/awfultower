@@ -7,6 +7,16 @@ module.exports = class Layer extends createjs.Container
 
     @tiles = {}
 
+    @bounds =
+      x: {min: 0, max: -99999}
+      y: {min: 0, max: -99999}
+
+  width: =>
+    @bounds.x.max - @bounds.x.min
+
+  height: =>
+    @bounds.y.max - @bounds.y.min
+
   addTiles: (mouseX, mouseY) ->
     return if not @visible or @locked
 
@@ -51,6 +61,12 @@ module.exports = class Layer extends createjs.Container
     oldIndex = @tiles[x][y]?.tile
     @tiles[x][y] = t
     @addChild t
+
+    @bounds.x.min = x if x < @bounds.x.min
+    @bounds.x.max = x if x > @bounds.x.max
+
+    @bounds.y.min = y if y < @bounds.y.min
+    @bounds.y.max = y if y > @bounds.y.max
 
     Undo.push("+", t, oldIndex) if recordHistory
 

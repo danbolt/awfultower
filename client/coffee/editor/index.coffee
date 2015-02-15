@@ -1,6 +1,8 @@
 Legend = require './legend'
 Canvas = require './canvas'
 Preload = require '../preload/load'
+Minimap = require './minimap'
+
 em = require '../event_manager'
 
 GRID_COLOR = "#e5e5e5"
@@ -10,12 +12,15 @@ module.exports = class Editor
 
     @legendStage = new createjs.Stage 'legend-canvas'
     @sceneStage = new createjs.Stage 'scene-canvas'
+    @minimapStage = new createjs.Stage 'minimap-canvas'
 
     @legend = new Legend(@)
+    Minimap.init()
     Canvas.init()
 
     @legendStage.addChild @legend
     @sceneStage.addChild Canvas
+    @minimapStage.addChild Minimap
 
     em.register 'keydown', @keydown
 

@@ -2,6 +2,8 @@ Preload = require '../preload/load'
 Tile = require './lib/tile'
 Undo = require './undo'
 Layer = require './lib/layer'
+Minimap = require './minimap'
+
 em = require '../event_manager'
 
 {tileWidth, tileHeight} = require './utils'
@@ -143,10 +145,27 @@ class Canvas extends createjs.Container
     @tile = index
     @addHighlight()
 
+  recalculateMinimap: ->
+    width = height = 0
+
+    for name, layer of @layers
+      width = layer.width() if layer.width() > width
+      height = layer.height() if layer.height() > height
+
+    width ||= 1
+    height ||= 1
+
+    Minimap.update
+      width: width * tileWidth + 64
+      height: height * tileHeight + 64
+      layers: @layers
+
   stageMouseUp: (e) =>
     @mouseDown = false
 
     @lastMouseDown = @gridCoords(e.rawX, e.rawY)
+
+    @recalculateMinimap()
 
   stageMouseDown: (e) =>
     @mouseDown = true
