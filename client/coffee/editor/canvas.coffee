@@ -147,10 +147,14 @@ class Canvas extends createjs.Container
 
   recalculateMinimap: ->
     width = height = 0
+    minX = minY = 0
 
     for name, layer of @layers
       width = layer.width() if layer.width() > width
       height = layer.height() if layer.height() > height
+
+      minX = layer.bounds.x.min if layer.bounds.x.min < minX
+      minY = layer.bounds.y.min if layer.bounds.y.min < minY
 
     width ||= 1
     height ||= 1
@@ -158,6 +162,8 @@ class Canvas extends createjs.Container
     Minimap.update
       width: width * tileWidth + 64
       height: height * tileHeight + 64
+      minX: minX * tileWidth
+      minY: minY * tileHeight
       layers: @layers
 
   stageMouseUp: (e) =>

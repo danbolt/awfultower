@@ -21,8 +21,8 @@ module.exports = class Minimap extends createjs.Container
         tile.scaleX = scale
         tile.scaleY = scale
 
-        tile.x *= scale
-        tile.y *= scale
+        tile.x = (tile.x - data.minX)*scale
+        tile.y = (tile.y - data.minY)*scale
         @addChild tile
         cb()
 
