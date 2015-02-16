@@ -1,4 +1,4 @@
-class Undo
+module.exports = class Undo
   constructor: ->
     @_undo = []
     @_redo = []
@@ -42,4 +42,4 @@ class Undo
     tile: item.tileIndex
 
 
-module.exports = new Undo()
+

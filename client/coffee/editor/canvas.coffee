@@ -1,6 +1,5 @@
 Preload = require '../preload/load'
 Tile = require './lib/tile'
-Undo = require './undo'
 Layer = require './lib/layer'
 Minimap = require './minimap'
 
@@ -67,9 +66,11 @@ class Canvas extends createjs.Container
   keydown: (e) =>
     switch e.keyCode
       when 85 # u
-        @undo()
+        @currentLayer.undo()
+        Minimap.recalculate()
       when 82 # r
-        @redo()
+        @currentLayer.redo()
+        Minimap.recalculate()
       when 16 # shift
         @_SHIFT_DOWN = true
       when 72,74,75,76 # hjkl
@@ -271,19 +272,6 @@ class Canvas extends createjs.Container
     @regY += direction.y if direction.y
 
 
-  undo: ->
-    return unless (undo = Undo.undo())
-    if undo.action is '+'
-      @currentLayer.addTile undo.x, undo.y, undo.tile, false
-    else if undo.action is '-'
-      @currentLayer.removeTile undo.x, undo.y, false
-
-  redo: ->
-    return unless (redo = Undo.redo())
-    if redo.action is '+'
-      @currentLayer.addTile redo.x, redo.y, redo.tile, false
-    else if redo.action is '-'
-      @currentLayer.removeTile redo.x, redo.y, false
 
   addGrid: ->
     @grid = new createjs.Container()

@@ -1,5 +1,5 @@
-Undo = require '../undo'
 Tile = require './tile'
+Undo = require '../undo'
 
 module.exports = class Layer extends createjs.Container
   constructor: (@delegate, @name) ->
@@ -10,6 +10,8 @@ module.exports = class Layer extends createjs.Container
     @bounds =
       x: {min: 9999, max: -9999}
       y: {min: 9999, max: -9999}
+
+    @_undo = new Undo()
 
   width: =>
     @bounds.x.max - @bounds.x.min
@@ -68,7 +70,7 @@ module.exports = class Layer extends createjs.Container
     @bounds.y.min = y if y < @bounds.y.min
     @bounds.y.max = y + 1 if y + 1 > @bounds.y.max
 
-    Undo.push("+", t, oldIndex) if recordHistory
+    @_undo.push("+", t, oldIndex) if recordHistory
 
   removeTile: (x, y, recordHistory = true) ->
     return if not @visible or @locked
@@ -78,4 +80,19 @@ module.exports = class Layer extends createjs.Container
       @removeChild(tile)
       delete @tiles[x][y]
 
-      Undo.push("-", tile) if recordHistory
+      @_undo.push("-", tile) if recordHistory
+
+  undo: ->
+    return unless (undo = @_undo.undo())
+    if undo.action is '+'
+      @addTile undo.x, undo.y, undo.tile, false
+    else if undo.action is '-'
+      @removeTile undo.x, undo.y, false
+
+  redo: ->
+    return unless (redo = @_undo.redo())
+    if redo.action is '+'
+      @addTile redo.x, redo.y, redo.tile, false
+    else if redo.action is '-'
+      @removeTile redo.x, redo.y, false
+
