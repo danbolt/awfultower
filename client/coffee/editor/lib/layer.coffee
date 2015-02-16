@@ -48,10 +48,18 @@ module.exports = class Layer extends createjs.Container
       else @addTile(tile.x, tile.y, @delegate.tile)
 
 
+  outsideViewport: (x, y) ->
+
+    {x: worldX, y: worldY} = @delegate.worldCoords(x, y)
+
+    return worldX < @x or worldY < @y or
+      worldX >= @x + @delegate.stage.canvas.width or
+      worldY >= @y + @delegate.stage.canvas.height
+
   addTile: (x, y, index, recordHistory = true) ->
 
     return if not @visible or @locked
-    return if @delegate.worldCoords(x, y).x < @x
+    return if @outsideViewport x, y
 
     @tiles[x] ||= {}
 
