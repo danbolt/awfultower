@@ -1,40 +1,86 @@
 
+{tileWidth, tileHeight} = require './utils'
+
 module.exports = class Minimap extends createjs.Container
   constructor: ->
     super
 
   init: ->
 
-  drawViewport: (data) =>
-    {regX, regY, width, height, canvas, minX, minY} = data
+  stageMouseDown: (e) =>
+    canvasWidth = @canvas.mapWidth() * tileWidth
+    canvasHeight = @canvas.mapHeight() * tileHeight
 
-    sx = @stage.canvas.width / width
-    sy = @stage.canvas.height / height
+    bounds = @canvas.bounds()
 
-    @removeChild @viewport
+    width = @stage.canvas.width
+    height = @stage.canvas.height
+
+    scale = Math.min(width / canvasWidth, height / canvasHeight)
+
+    @canvas.hideViewportTiles()
+
+    @canvas.regX = Math.floor((e.stageX / scale - @canvas.stage.canvas.width / 2) / tileWidth) * tileWidth
+    @canvas.regY = Math.floor((e.stageY / scale - @canvas.stage.canvas.height / 2) / tileHeight) * tileHeight
+
+    @canvas.showViewportTiles()
+
+    @recalculate()
+
+  stageMouseUp: (e) =>
+
+  recalculate:  =>
+    @removeAllChildren()
+
+    @addTiles()
+    @drawViewport()
+
+  drawViewport:  =>
+    canvasWidth = @canvas.mapWidth() * tileWidth
+    canvasHeight = @canvas.mapHeight() * tileHeight
+
+    bounds = @canvas.bounds()
+
+    width = @stage.canvas.width
+    height = @stage.canvas.height
+
+    scale = Math.min(width / canvasWidth, height / canvasHeight)
+
+    minX = Math.min(bounds.minX, @canvas.regX / tileWidth)
+    minY = Math.min(bounds.minY, @canvas.regY / tileHeight)
+
     g = new createjs.Graphics()
     g.setStrokeStyle(3)
     g.beginStroke("red")
 
-    size = Math.min canvas.width * sx, canvas.height * sy
+    size = Math.min @canvas.stage.canvas.width * scale, @canvas.stage.canvas.height * scale
+    x = (@canvas.regX - minX*tileWidth) * scale
+    y = (@canvas.regY - minY*tileHeight) * scale
 
-    x = (regX - minX)* sx
-    y = (regY - minY)* sy
+    g.drawRect(x,y, size, size)
 
-    g.drawRect(x, y, size, size)
-
+    @removeChild @viewport
     @viewport = new createjs.Shape g
-    @addChild @viewport
 
+    @addChild @viewport
     @stage.update()
 
-  update: (data) =>
-    @removeAllChildren()
-    scaleX = @stage.canvas.width / data.width
-    scaleY = @stage.canvas.height / data.height
-    layers = data.layers
+  addTiles:  =>
+    canvasWidth = @canvas.mapWidth() * tileWidth
+    canvasHeight = @canvas.mapHeight() * tileHeight
 
-    scale = Math.min scaleX, scaleY
+    bounds = @canvas.bounds()
+
+    width = @stage.canvas.width
+    height = @stage.canvas.height
+
+    scale = Math.min(width / canvasWidth, height / canvasHeight)
+
+    minX = Math.min(bounds.minX, @canvas.regX / tileWidth)
+    minY = Math.min(bounds.minY, @canvas.regY / tileHeight)
+
+    layers = @canvas.layers
+
     for name, layer of layers
       async.each layer.children, (tile, cb) =>
 
@@ -44,8 +90,9 @@ module.exports = class Minimap extends createjs.Container
         tile.scaleX = scale
         tile.scaleY = scale
 
-        tile.x = (tile.x - data.minX)*scale
-        tile.y = (tile.y - data.minY)*scale
+        tile.x = (tile.x - minX*tileWidth)*scale
+        tile.y = (tile.y - minY*tileHeight)*scale
+
         @addChild tile
         cb()
 

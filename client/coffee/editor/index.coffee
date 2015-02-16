@@ -27,6 +27,9 @@ module.exports = class Editor
     @sceneStage.on 'stagemousedown', Canvas.stageMouseDown
     @sceneStage.on 'stagemouseup', Canvas.stageMouseUp
 
+    @minimapStage.on 'stagemousedown', Minimap.stageMouseDown
+    @minimapStage.on 'stagemouseup', Minimap.stageMouseUp
+
     # @addBrushControls()
     # @addGrid()
 

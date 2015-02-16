@@ -21,6 +21,7 @@ class Canvas extends createjs.Container
     @brushSize = 1
 
     @gridOn = true
+    Minimap.canvas = @
 
     em.register 'keydown', @keydown
     em.register 'keyup', @keyup
@@ -92,8 +93,7 @@ class Canvas extends createjs.Container
       @down = down
 
     if not down and e.keyCode in [72, 74, 75, 76]
-      @recalculateMinimap()
-
+      Minimap.recalculate()
 
   toggleGrid: (gridOn) =>
     @gridOn = gridOn
@@ -149,51 +149,82 @@ class Canvas extends createjs.Container
     @tile = index
     @addHighlight()
 
-  recalculateMinimap: ->
-    width = @stage.canvas.width / tileWidth
-    height = @stage.canvas.height / tileHeight
-    minX = minY = 0
 
+  bounds: =>
+    maxX = maxY = 0
+    minX = minY = 9999
     for name, layer of @layers
-      width = layer.width() if layer.width() > width
-      height = layer.height() if layer.height() > height
-
       minX = layer.bounds.x.min if layer.bounds.x.min < minX
       minY = layer.bounds.y.min if layer.bounds.y.min < minY
 
-    minX = @regX / tileWidth if @regX / tileWidth < minX
-    minY = @regY / tileHeight if @regY / tileHeight < minY
+      maxX = layer.bounds.x.max if layer.bounds.x.max > maxX
+      maxY = layer.bounds.y.max if layer.bounds.x.max > maxY
 
-    width ||= 1
-    height ||= 1
+    {maxX: maxX, maxY: maxY, minX: minX, minY: minY}
 
-    width = Math.max(width, (Math.abs(@regX) + @stage.canvas.width) / tileWidth)
-    height = Math.max(height, (Math.abs(@regY) + @stage.canvas.height) / tileHeight)
+  mapWidth: =>
+    width = @stage.canvas.width / tileWidth
+    bounds = @bounds()
+    regX = @regX / tileWidth
 
-    Minimap.update
-      width: width * tileWidth
-      height: height * tileHeight
-      minX: minX * tileWidth
-      minY: minY * tileHeight
-      layers: @layers
+    for name, layer of @layers
+      width = layer.width() if layer.width() > width
 
-    Minimap.drawViewport
-      regX: @regX
-      regY: @regY
-      canvas:
-        width: @stage.canvas.width
-        height: @stage.canvas.height
-      width: width * tileWidth
-      height: height * tileHeight
-      minX: minX * tileWidth
-      minY: minY * tileHeight
+    width = Math.max(
+      width
+      Math.max(
+        Math.abs(bounds.maxX - regX)
+        Math.abs(bounds.minX - (regX + @stage.canvas.width / tileWidth))
+      )
+    )
+
+  mapHeight: =>
+    height = @stage.canvas.height / tileHeight
+    bounds = @bounds()
+    regY = @regY / tileHeight
+
+    for name, layer of @layers
+      height = layer.height() if layer.height() > height
+
+    height = Math.max(
+      height
+      Math.max(
+        Math.abs(bounds.maxY - regY)
+        Math.abs(bounds.minY - (regY + @stage.canvas.height / tileHeight))
+      )
+    )
+
+  hideViewportTiles: ->
+    x = Math.floor(@regX / tileWidth)
+    y = Math.floor(@regY / tileHeight)
+
+    width = Math.floor(@stage.canvas.width / tileWidth)
+    height = Math.floor(@stage.canvas.height / tileHeight)
+
+
+    for name, layer of @layers
+      for i in [x..x + width]
+        for j in [y..y + height]
+          layer.tiles[i]?[j]?.visible = false
+
+  showViewportTiles: ->
+    x = Math.floor(@regX / tileWidth)
+    y = Math.floor(@regY / tileHeight)
+
+    width = Math.floor(@stage.canvas.width / tileWidth)
+    height = Math.floor(@stage.canvas.height / tileHeight)
+
+    for name, layer of @layers
+      for i in [x..x + width]
+        for j in [y..y + height]
+          layer.tiles[i]?[j]?.visible = true
 
   stageMouseUp: (e) =>
     @mouseDown = false
 
     @lastMouseDown = @gridCoords(e.rawX, e.rawY)
 
-    @recalculateMinimap()
+    Minimap.recalculate()
 
   stageMouseDown: (e) =>
     @mouseDown = true

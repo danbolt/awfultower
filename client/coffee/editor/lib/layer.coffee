@@ -8,8 +8,8 @@ module.exports = class Layer extends createjs.Container
     @tiles = {}
 
     @bounds =
-      x: {min: 0, max: -99999}
-      y: {min: 0, max: -99999}
+      x: {min: 9999, max: -9999}
+      y: {min: 9999, max: -9999}
 
   width: =>
     @bounds.x.max - @bounds.x.min
@@ -63,10 +63,10 @@ module.exports = class Layer extends createjs.Container
     @addChild t
 
     @bounds.x.min = x if x < @bounds.x.min
-    @bounds.x.max = x if x > @bounds.x.max
+    @bounds.x.max = x + 1 if x + 1 > @bounds.x.max
 
     @bounds.y.min = y if y < @bounds.y.min
-    @bounds.y.max = y if y > @bounds.y.max
+    @bounds.y.max = y + 1 if y + 1 > @bounds.y.max
 
     Undo.push("+", t, oldIndex) if recordHistory
 
