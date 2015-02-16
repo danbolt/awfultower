@@ -1,6 +1,9 @@
 .panel.layers
   ul
     background-color: white
+    .sortable-placeholder
+      background-color: lighten($highlight, 15%)
+      padding: 4px
 
   .layer
     color: $darkHighlight
@@ -32,7 +35,6 @@
 
       &.locked .locked
         color: white
-
 
   .add-layer
     float: right

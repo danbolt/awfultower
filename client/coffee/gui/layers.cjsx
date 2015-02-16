@@ -19,6 +19,34 @@ module.exports = React.createClass
     @setState {layers: layers, currentLayer: layer}, ->
       em.call 'add-layer', [layer]
 
+  componentDidMount: ->
+    @sortable()
+
+  sortable: ->
+    $list = $(@refs.list.getDOMNode())
+    height = $list.first().height()
+
+    $list.sortable
+      axis: "y"
+      containment: "parent"
+      stop: @sorted
+      tolerance: "pointer"
+      forcePlaceholderSize: true
+      placeholder: "sortable-placeholder"
+      grid: [0, height]
+
+    $list.disableSelection()
+
+  sorted: (e, ui) ->
+    layers = $(@refs.list.getDOMNode()).children("li")
+    layers = layers.map (index, layer) =>
+      $(layer).data "name"
+
+    layers = $.makeArray(layers)
+
+    @setState {layers: layers}, ->
+      em.call 'reorder-layers', [layers]
+
   render: ->
     <div className="panel layers">
       <h2>
@@ -26,12 +54,11 @@ module.exports = React.createClass
         <button className="add-layer fa fa-plus" onClick={@addLayer} />
       </h2>
 
-      <ul>
+      <ul ref="list">
         {
-          for layer in @state.layers
+          for layer, i in @state.layers
             current = layer is @state.currentLayer
-            <Layer name={layer} key={layer} current={current} layerSelected={@layerSelected}/>
-
+            <Layer name={layer} key={Math.random()} current={current} layerSelected={@layerSelected}/>
         }
       </ul>
     </div>

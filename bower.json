@@ -10,7 +10,8 @@
     "react": "~0.12.2",
     "fontawesome": "~4.3.0",
     "normalize.css": "~3.0.2",
-    "async": "0.9.2"
+    "async": "0.9.2",
+    "jquery-ui": "~1.11.3"
   },
   "overrides": {
     "underscore": {

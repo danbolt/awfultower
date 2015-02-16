@@ -27,7 +27,7 @@ module.exports = React.createClass
     cx += " locked" if @state.locked
     cx += " current" if @props.current
 
-    <li className={cx} onClick={@changeLayer}>
+    <li className={cx} onClick={@changeLayer} data-name={@props.name}>
       {@props.name}
       <div className="controls">
         <div className="fa fa-eye visibility" onClick={@hideLayer} />

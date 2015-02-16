@@ -30,6 +30,7 @@ class Canvas extends createjs.Container
     em.register 'change-layer', @changeLayer
     em.register 'hide-layer', @hideLayer
     em.register 'lock-layer', @lockLayer
+    em.register 'reorder-layers', @reorderLayers
 
     # Tile map!
     data =
@@ -57,6 +58,10 @@ class Canvas extends createjs.Container
 
   changeLayer: (name) =>
     @currentLayer = @layers[name] if @layers[name]
+
+  reorderLayers: (layers) =>
+    for layer, i in layers
+      @setChildIndex @layers[layer], i
 
   addLayer: (name) =>
     @currentLayer = new Layer(@, name)
