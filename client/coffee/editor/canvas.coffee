@@ -2,6 +2,7 @@ Preload = require '../preload/load'
 Tile = require './lib/tile'
 Layer = require './lib/layer'
 Minimap = require './minimap'
+Stamp = require './lib/stamp'
 
 em = require '../event_manager'
 
@@ -15,8 +16,6 @@ class Canvas extends createjs.Container
     super
 
   init: ->
-    @tile = 0
-
     @brushSize = 1
 
     @newTiles = []
@@ -130,33 +129,46 @@ class Canvas extends createjs.Container
     x = Math.floor(@stage.mouseX / tileWidth) * tileWidth
     y = Math.floor(@stage.mouseY / tileHeight) * tileHeight
 
-    index = @tile
+    index = Stamp.index
 
     @selection = new createjs.Container()
 
-    for i in [0..(@brushSize - 1)*2]
-      for j in [0..(@brushSize - 1)*2]
-        tile = new Tile(i, j, index, @tilesheet)
-        tile.alpha = 0.3
-        @selection.addChild tile
+    if Stamp.multiple
+      length = Stamp.indicies.length
+      for i in [0..length - 1]
+        for j in [0..Stamp.indicies[i].length - 1]
+          tile = new Tile(i,j, Stamp.indicies[i][j], @tilesheet)
+          tile.alpha = 0.3
+          @selection.addChild tile
 
-    @selection.x = x - (tileWidth * ( @brushSize - 1) )
-    @selection.y = y - (tileHeight * ( @brushSize - 1) )
+      x = Stamp.indicies.length
+      y = Stamp.indicies[0].length
 
-    g = new createjs.Graphics()
-    g.beginStroke("black")
-    g.setStrokeStyle(2)
-    g.drawRect(0, 0, (tileWidth * ((@brushSize - 1)*2 + 1)), (tileHeight * ((@brushSize - 1)*2 + 1)))
-    border = new createjs.Shape(g)
+      g = new createjs.Graphics()
+      g.beginStroke("black")
+      g.setStrokeStyle(2)
+      g.drawRect(0, 0, x*tileWidth, y*tileHeight)
+      border = new createjs.Shape(g)
+
+    else
+      for i in [0..(@brushSize - 1)*2]
+        for j in [0..(@brushSize - 1)*2]
+          tile = new Tile(i, j, index, @tilesheet)
+          tile.alpha = 0.3
+          @selection.addChild tile
+
+      @selection.x = x - (tileWidth * ( @brushSize - 1) )
+      @selection.y = y - (tileHeight * ( @brushSize - 1) )
+
+      g = new createjs.Graphics()
+      g.beginStroke("black")
+      g.setStrokeStyle(2)
+      g.drawRect(0, 0, (tileWidth * ((@brushSize - 1)*2 + 1)), (tileHeight * ((@brushSize - 1)*2 + 1)))
+      border = new createjs.Shape(g)
 
     @selection.addChild border
 
     @addChild(@selection)
-
-  changeTile: (index) ->
-    @tile = index
-    @addHighlight()
-
 
   bounds: =>
     maxX = maxY = 0

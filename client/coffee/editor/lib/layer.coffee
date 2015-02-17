@@ -1,5 +1,6 @@
 Tile = require './tile'
 Undo = require '../undo'
+Stamp = require './stamp'
 
 module.exports = class Layer extends createjs.Container
   constructor: (@delegate, @name) ->
@@ -19,34 +20,6 @@ module.exports = class Layer extends createjs.Container
   height: =>
     @bounds.y.max - @bounds.y.min
 
-  addTiles: (mouseX, mouseY) ->
-    return if not @visible or @locked
-
-    {x,y} = @delegate.gridCoords(mouseX, mouseY)
-
-    _x = _y = @delegate.brushSize - 1
-
-    tilesToAdd = []
-
-    for i in [-_x.._x]
-      for j in [-_y.._y]
-        tilesToAdd.push(x: x+i, y: y+j)
-
-    if @delegate._SHIFT_DOWN and @delegate.lastMouseDown
-      if y is @delegate.lastMouseDown.y
-        for i in [x..@delegate.lastMouseDown.x]
-          for j in [-_y.._y]
-            tilesToAdd.push(x: i, y: y+j) unless {x: i, y: y+j} in tilesToAdd
-
-      else if x is @delegate.lastMouseDown.x
-        for i in [-_x.._x]
-          for j in [y..@delegate.lastMouseDown.y]
-            tilesToAdd.push(x: x+i, y: j) unless {x: x+i, y: j} in tilesToAdd
-
-    for tile in tilesToAdd
-      if @delegate.erase then @removeTile(tile.x,tile.y)
-      else @addTile(tile.x, tile.y, @delegate.tile)
-
   # Make sure that the tile is inside the viewport!
   outsideViewport: (x, y) ->
     {x,y} = @delegate.worldCoords(x, y)
@@ -54,6 +27,42 @@ module.exports = class Layer extends createjs.Container
     h = @delegate.stage.canvas.height
 
     return not ( 0 <= x < w and 0 <= y < h )
+
+  addTiles: (mouseX, mouseY) ->
+    return if not @visible or @locked
+
+    {x,y} = @delegate.gridCoords(mouseX, mouseY)
+
+    tilesToAdd = []
+
+    if Stamp.multiple
+      for i in [0..Stamp.indicies.length - 1]
+        for j in [0..Stamp.indicies[i].length - 1]
+
+          @addTile(x+i,y+j, Stamp.indicies[i][j])
+    else
+      index = Stamp.index
+
+      _x = _y = @delegate.brushSize - 1
+
+      for i in [-_x.._x]
+        for j in [-_y.._y]
+          tilesToAdd.push(x: x+i, y: y+j)
+
+      if @delegate._SHIFT_DOWN and @delegate.lastMouseDown
+        if y is @delegate.lastMouseDown.y
+          for i in [x..@delegate.lastMouseDown.x]
+            for j in [-_y.._y]
+              tilesToAdd.push(x: i, y: y+j) unless {x: i, y: y+j} in tilesToAdd
+
+        else if x is @delegate.lastMouseDown.x
+          for i in [-_x.._x]
+            for j in [y..@delegate.lastMouseDown.y]
+              tilesToAdd.push(x: x+i, y: j) unless {x: x+i, y: j} in tilesToAdd
+
+      for tile in tilesToAdd
+        if @delegate.erase then @removeTile(tile.x,tile.y)
+        else @addTile(tile.x, tile.y, index)
 
   addTile: (x, y, index, recordHistory = true) ->
 

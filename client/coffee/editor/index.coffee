@@ -28,6 +28,9 @@ module.exports = class Editor
 
     @minimapStage.on 'stagemousedown', Minimap.stageMouseDown
 
+    @legendStage.on 'stagemousedown', @legend.stageMouseDown
+    @legendStage.on 'stagemouseup', @legend.stageMouseUp
+
     createjs.Ticker.addEventListener 'tick', @legendStage
     createjs.Ticker.addEventListener 'tick', @sceneStage
     createjs.Ticker.addEventListener 'tick', @update
@@ -40,6 +43,6 @@ module.exports = class Editor
   update: =>
     Canvas.update()
 
-  tileSelected: (index) =>
-    Canvas.changeTile index
+  tileSelected: =>
+    Canvas.addHighlight()
 
