@@ -19,6 +19,8 @@ class Canvas extends createjs.Container
 
     @brushSize = 1
 
+    @newTiles = []
+
     @gridOn = true
     Minimap.canvas = @
 
@@ -99,7 +101,7 @@ class Canvas extends createjs.Container
       @down = down
 
     if not down and e.keyCode in [72, 74, 75, 76]
-      Minimap.recalculate()
+      Minimap.drawViewport()
 
   toggleGrid: (gridOn) =>
     @gridOn = gridOn
@@ -230,9 +232,10 @@ class Canvas extends createjs.Container
 
     @lastMouseDown = @gridCoords(e.rawX, e.rawY)
 
-    Minimap.recalculate()
+    Minimap.recalculate @newTiles
 
   stageMouseDown: (e) =>
+    @newTiles = []
     @mouseDown = true
     @currentLayer?.addTiles(e.rawX, e.rawY)
 
@@ -275,8 +278,6 @@ class Canvas extends createjs.Container
 
     @regX += direction.x if direction.x
     @regY += direction.y if direction.y
-
-
 
   addGrid: ->
     @grid = new createjs.Container()

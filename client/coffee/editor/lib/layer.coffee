@@ -79,6 +79,8 @@ module.exports = class Layer extends createjs.Container
 
     @_undo.push("+", t, oldIndex) if recordHistory
 
+    @delegate.newTiles.push t
+
   removeTile: (x, y, recordHistory = true) ->
     return if not @visible or @locked
 

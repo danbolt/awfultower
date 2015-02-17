@@ -20,19 +20,17 @@ module.exports = class Minimap extends createjs.Container
 
     @canvas.hideViewportTiles()
 
-    @canvas.regX = Math.floor((e.stageX / scale - @canvas.stage.canvas.width / 2) / tileWidth) * tileWidth
-    @canvas.regY = Math.floor((e.stageY / scale - @canvas.stage.canvas.height / 2) / tileHeight) * tileHeight
+    @canvas.regX = Math.floor((e.stageX / scale + @regX - @canvas.stage.canvas.width / 2) / tileWidth) * tileWidth
+    @canvas.regY = Math.floor((e.stageY / scale + @regY - @canvas.stage.canvas.height / 2) / tileHeight) * tileHeight
 
     @canvas.showViewportTiles()
 
-    @recalculate()
+    @drawViewport()
 
   stageMouseUp: (e) =>
 
-  recalculate:  =>
-    @removeAllChildren()
-
-    @addTiles()
+  recalculate:  (tiles) =>
+    @addTiles tiles
     @drawViewport()
 
   drawViewport:  =>
@@ -50,12 +48,12 @@ module.exports = class Minimap extends createjs.Container
     minY = Math.min(bounds.minY, @canvas.regY / tileHeight)
 
     g = new createjs.Graphics()
-    g.setStrokeStyle(3)
+    g.setStrokeStyle(3 / scale)
     g.beginStroke("red")
 
-    size = Math.min @canvas.stage.canvas.width * scale, @canvas.stage.canvas.height * scale
-    x = (@canvas.regX - minX*tileWidth) * scale
-    y = (@canvas.regY - minY*tileHeight) * scale
+    size = Math.min @canvas.stage.canvas.width, @canvas.stage.canvas.height
+    x = (@canvas.regX )
+    y = (@canvas.regY )
 
     g.drawRect(x,y, size, size)
 
@@ -63,9 +61,15 @@ module.exports = class Minimap extends createjs.Container
     @viewport = new createjs.Shape g
 
     @addChild @viewport
+    @scaleX = scale
+    @scaleY = scale
+
+    @regX = minX * tileWidth
+    @regY = minY * tileHeight
+
     @stage.update()
 
-  addTiles:  =>
+  addTiles: (tiles) =>
     canvasWidth = @canvas.mapWidth() * tileWidth
     canvasHeight = @canvas.mapHeight() * tileHeight
 
@@ -81,25 +85,24 @@ module.exports = class Minimap extends createjs.Container
 
     layers = @canvas.layers
 
-    for name, layer of layers
-      async.each layer.children, (tile, cb) =>
+    async.each tiles, (tile, cb) =>
 
-        tile = _.clone tile
-        tile.visible = true
+      tile = _.clone tile
+      tile.visible = true
 
-        tile.scaleX = scale
-        tile.scaleY = scale
+      tile.x = (tile.x )
+      tile.y = (tile.y )
 
-        tile.x = (tile.x - minX*tileWidth)*scale
-        tile.y = (tile.y - minY*tileHeight)*scale
+      @addChild tile
+      cb()
 
-        @addChild tile
-        cb()
-
-      , (err) =>
-        return console.log "Error adding tile in minimap.coffe: #{err}" if err
-        @stage.update()
-
+    , (err) =>
+      return console.log "Error adding tile in minimap.coffe: #{err}" if err
+      @regX = minX * tileWidth
+      @regY = minY * tileHeight
+      @scaleX = scale
+      @scaleY = scale
+      @stage.update()
 
 module.exports = new Minimap()
 
