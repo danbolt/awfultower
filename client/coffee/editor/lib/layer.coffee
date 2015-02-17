@@ -47,14 +47,13 @@ module.exports = class Layer extends createjs.Container
       if @delegate.erase then @removeTile(tile.x,tile.y)
       else @addTile(tile.x, tile.y, @delegate.tile)
 
-
+  # Make sure that the tile is inside the viewport!
   outsideViewport: (x, y) ->
+    {x,y} = @delegate.worldCoords(x, y)
+    w = @delegate.stage.canvas.width
+    h = @delegate.stage.canvas.height
 
-    {x: worldX, y: worldY} = @delegate.worldCoords(x, y)
-
-    return worldX < @x or worldY < @y or
-      worldX >= @x + @delegate.stage.canvas.width or
-      worldY >= @y + @delegate.stage.canvas.height
+    return not ( 0 <= x < w and 0 <= y < h )
 
   addTile: (x, y, index, recordHistory = true) ->
 

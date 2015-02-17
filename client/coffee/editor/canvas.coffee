@@ -305,7 +305,7 @@ class Canvas extends createjs.Container
   # Where in pixel values should the tile be
   worldCoords: (x, y) ->
     x: (x * tileWidth) + @x - @regX
-    y: (y * tileWidth) + @y - @regX
+    y: (y * tileHeight) + @y - @regY
 
   # Where in the tilemap should the tile be
   gridCoords: (x,y) ->
