@@ -15,7 +15,6 @@ module.exports = class Editor
     @minimapStage = new createjs.Stage 'minimap-canvas'
 
     @legend = new Legend(@)
-    Minimap.init()
     Canvas.init()
 
     @legendStage.addChild @legend
@@ -28,16 +27,11 @@ module.exports = class Editor
     @sceneStage.on 'stagemouseup', Canvas.stageMouseUp
 
     @minimapStage.on 'stagemousedown', Minimap.stageMouseDown
-    @minimapStage.on 'stagemouseup', Minimap.stageMouseUp
-
-    # @addBrushControls()
-    # @addGrid()
 
     createjs.Ticker.addEventListener 'tick', @legendStage
     createjs.Ticker.addEventListener 'tick', @sceneStage
     createjs.Ticker.addEventListener 'tick', @update
     createjs.Ticker.framerate = 60
-
 
   keydown: (e) =>
     if 48 < e.keyCode <= 57 # 48 is 0, 57 is 9
