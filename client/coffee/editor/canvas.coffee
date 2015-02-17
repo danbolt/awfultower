@@ -118,8 +118,12 @@ class Canvas extends createjs.Container
     x *= tileWidth
     y *= tileHeight
 
-    @selection.x = x - (tileWidth * (@brushSize-1))
-    @selection.y = y - (tileHeight * (@brushSize-1))
+    if Stamp.multiple
+      @selection.x = x
+      @selection.y = y
+    else
+      @selection.x = x - (tileWidth * (@brushSize-1))
+      @selection.y = y - (tileHeight * (@brushSize-1))
 
   # This is the square that highlights which cell you are on
   addHighlight: =>
