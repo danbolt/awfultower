@@ -4,6 +4,8 @@ module.exports = class Minimap extends createjs.Container
   constructor: ->
     super
 
+    @tiles = {}
+
   scale: ->
     canvasWidth = @canvas.mapWidth() * tileWidth
     canvasHeight = @canvas.mapHeight() * tileHeight
@@ -39,10 +41,6 @@ module.exports = class Minimap extends createjs.Container
 
     @drawViewport()
 
-  recalculate: (tiles) =>
-    @addTiles tiles
-    @drawViewport()
-
   drawViewport:  =>
     g = new createjs.Graphics().setStrokeStyle( 3 / @scale() ).beginStroke("red")
 
@@ -61,9 +59,37 @@ module.exports = class Minimap extends createjs.Container
     for tile in tiles
       tile = _.clone tile
       tile.visible = true
-      @addChild tile
 
+      {x,y} = tile.pos
+
+      @tiles[x] ||= {}
+      existingTile = @tiles[x][y]
+
+      if existingTile
+        if existingTile.tile isnt tile.tile
+          @removeChild existingTile
+          @addChild tile
+          @tiles[x][y] = tile
+      else
+        @addChild tile
+        @tiles[x][y] = tile
+
+    @drawViewport()
+    @updateContainer()
+
+  removeTiles: (tiles) =>
+    return unless tiles?.length
+    for tile in tiles
+      {x,y} = tile.pos
+
+      continue unless (t = @tiles[x]?[y])
+
+      @removeChild t
+      delete @tiles[x][y]
+
+    @drawViewport()
     @updateContainer()
 
 module.exports = new Minimap()
+
 

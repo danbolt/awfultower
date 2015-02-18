@@ -45,10 +45,12 @@ module.exports = class Layer extends createjs.Container
 
       _x = _y = @delegate.brushSize - 1
 
+      # Add basic tiles
       for i in [-_x.._x]
         for j in [-_y.._y]
           tilesToAdd.push(x: x+i, y: y+j)
 
+      # If you are holding shift, add tiles in a straight line
       if @delegate._SHIFT_DOWN and @delegate.lastMouseDown
         if y is @delegate.lastMouseDown.y
           for i in [x..@delegate.lastMouseDown.x]
@@ -90,7 +92,7 @@ module.exports = class Layer extends createjs.Container
 
     @delegate.newTiles.push t
 
-  removeTile: (x, y, recordHistory = true) ->
+  removeTile: (x, y, recordHistory = true) =>
     return if not @visible or @locked
 
     tile = @tiles[x]?[y]
@@ -99,6 +101,7 @@ module.exports = class Layer extends createjs.Container
       delete @tiles[x][y]
 
       @_undo.push("-", tile) if recordHistory
+      @delegate.newTiles.push tile
 
   undo: ->
     return unless (undo = @_undo.undo())

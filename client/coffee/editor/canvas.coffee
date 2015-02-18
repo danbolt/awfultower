@@ -73,10 +73,8 @@ class Canvas extends createjs.Container
     switch e.keyCode
       when 85 # u
         @currentLayer.undo()
-        Minimap.recalculate()
       when 82 # r
         @currentLayer.redo()
-        Minimap.recalculate()
       when 16 # shift
         @_SHIFT_DOWN = true
       when 72,74,75,76 # hjkl
@@ -248,7 +246,10 @@ class Canvas extends createjs.Container
 
     @lastMouseDown = @gridCoords(e.rawX, e.rawY)
 
-    Minimap.recalculate @newTiles
+    if @erase
+      Minimap.removeTiles @newTiles
+    else
+      Minimap.addTiles @newTiles
 
   stageMouseDown: (e) =>
     @newTiles = []
