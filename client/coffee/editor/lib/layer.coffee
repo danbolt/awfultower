@@ -1,6 +1,7 @@
 Tile = require './tile'
 Undo = require '../undo'
 Stamp = require './stamp'
+Minimap = require '../minimap'
 
 module.exports = class Layer extends createjs.Container
   constructor: (@delegate, @name) ->
@@ -92,6 +93,8 @@ module.exports = class Layer extends createjs.Container
 
     @delegate.newTiles.push t
 
+    t
+
   removeTile: (x, y, recordHistory = true) =>
     return if not @visible or @locked
 
@@ -103,17 +106,23 @@ module.exports = class Layer extends createjs.Container
       @_undo.push("-", tile) if recordHistory
       @delegate.newTiles.push tile
 
+    tile
+
   undo: ->
     return unless (undo = @_undo.undo())
     if undo.action is '+'
-      @addTile undo.x, undo.y, undo.tile, false
+      _tile = @addTile undo.x, undo.y, undo.tile, false
+      Minimap.addTiles [_tile]
     else if undo.action is '-'
-      @removeTile undo.x, undo.y, false
+      _tile = @removeTile undo.x, undo.y, false
+      Minimap.removeTiles [_tile]
 
   redo: ->
     return unless (redo = @_undo.redo())
     if redo.action is '+'
-      @addTile redo.x, redo.y, redo.tile, false
+      _tile = @addTile redo.x, redo.y, redo.tile, false
+      Minimap.addTiles [_tile]
     else if redo.action is '-'
-      @removeTile redo.x, redo.y, false
+      _tile = @removeTile redo.x, redo.y, false
+      Minimap.removeTiles [_tile]
 
