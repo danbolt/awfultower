@@ -1,95 +1,78 @@
 {tileWidth, tileHeight} = require './utils'
 
-module.exports = class Minimap extends createjs.Container
+WIDTH = 256
+HEIGHT = 256
+
+MAP_SIZE = {x: 100, y: 100}
+
+class Minimap
   constructor: ->
-    super
+    @game = new Phaser.Game WIDTH, HEIGHT, Phaser.AUTO, "minimap",
+      preload: @preload
+      create: @create
+      update: @update
+      render: @render
 
     @tiles = {}
 
-  scale: ->
-    canvasWidth = @canvas.mapWidth() * tileWidth
-    canvasHeight = @canvas.mapHeight() * tileHeight
+  init: (@delegate) =>
 
-    width = @stage.canvas.width
-    height = @stage.canvas.height
+  mouseMove: (e) =>
+    return unless @game.input.mousePointer.isDown
+    x = (e.x / 256)
+    y = (e.y / 256)
 
-    Math.min(width / canvasWidth, height / canvasHeight)
+    @delegate.moveCamera x, y
 
-  updateContainer: ->
-    scale = @scale()
-    bounds = @canvas.bounds()
+  preload: =>
 
-    minX = Math.min(bounds.minX, @canvas.regX / tileWidth)
-    minY = Math.min(bounds.minY, @canvas.regY / tileHeight)
+    @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
 
-    @regX = minX * tileWidth
-    @regY = minY * tileHeight
+  create: =>
+    @game.stage.backgroundColor = '#2d2d2d'
+    @game.input.addMoveCallback @mouseMove, @
 
-    @scaleX = scale
-    @scaleY = scale
+    @minimap = @game.add.group()
+    @scale =
+      x: (WIDTH / MAP_SIZE.x) / tileWidth
+      y: (HEIGHT / MAP_SIZE.y) / tileHeight
 
-    @stage.update()
+    @highlightSize = (800 / tileWidth) * (tileWidth * @scale.x)
 
-  stageMouseDown: (e) =>
+    @highlight = @game.add.graphics()
+    @highlight.lineStyle(2, 0xffff00, 1)
+    @highlight.drawRect(0, 0, @highlightSize, @highlightSize)
 
-    @canvas.hideViewportTiles()
+  update: =>
+  render: =>
 
-    @canvas.regX = Math.floor((e.stageX / @scale() + @regX - @canvas.stage.canvas.width / 2) / tileWidth) * tileWidth
-    @canvas.regY = Math.floor((e.stageY / @scale() + @regY - @canvas.stage.canvas.height / 2) / tileHeight) * tileHeight
+  moveHighlight: (x,y) =>
+    @highlight.x = x * tileWidth * @scale.x
+    @highlight.y = y * tileHeight * @scale.y
 
-    @canvas.showViewportTiles()
+  addTile: (index, x, y) =>
 
-    @drawViewport()
+    @tiles[x] ?= {}
 
-  drawViewport:  =>
-    g = new createjs.Graphics().setStrokeStyle( 3 / @scale() ).beginStroke("red")
+    if @tiles[x][y]
+      @tiles[x][y].frame = index
+    else
+      sprite = @game.add.sprite x*@scale.x*tileWidth, y*@scale.y*tileHeight, 'level', index
+      sprite.scale.setTo @scale.x, @scale.y
 
-    size = Math.min @canvas.stage.canvas.width, @canvas.stage.canvas.height
+      @tiles[x][y] = sprite
 
-    g.drawRect(@canvas.regX, @canvas.regY, size, size)
+      @minimap.add sprite
 
-    @removeChild @viewport
-    @viewport = new createjs.Shape g
-    @addChild @viewport
+  fill: (tile, x, y, w, h) =>
+    for i in [0..w-1]
+      for j in [0..h-1]
+        @addTile tile, x+i, y+j
 
-    @updateContainer()
-
-  addTiles: (tiles) =>
-    return unless tiles?.length
-    for tile in tiles
-      tile = _.clone tile
-      tile.visible = true
-
-      {x,y} = tile.pos
-
-      @tiles[x] ||= {}
-      existingTile = @tiles[x][y]
-
-      if existingTile
-        if existingTile.tile isnt tile.tile
-          @removeChild existingTile
-          @addChild tile
-          @tiles[x][y] = tile
-      else
-        @addChild tile
-        @tiles[x][y] = tile
-
-    @drawViewport()
-    @updateContainer()
-
-  removeTiles: (tiles) =>
-    return unless tiles?.length
-    for tile in tiles
-      {x,y} = tile.pos
-
-      continue unless (t = @tiles[x]?[y])
-
-      @removeChild t
-      delete @tiles[x][y]
-
-    @drawViewport()
-    @updateContainer()
+  removeTile: (x,y) =>
+    return unless (tile = @tiles[x]?[y])
+    delete @tiles[x][y]
+    @minimap.remove tile
 
 module.exports = new Minimap()
-
 

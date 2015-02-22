@@ -28,6 +28,11 @@ module.exports = React.createClass
     cx += " active" if @state.eraseOn
     <li className={cx} onClick={@toggleErase} />
 
+  componentDidMount: ->
+    $(window).keydown (e) =>
+      if e.keyCode is 68
+        @toggleErase()
+
   render: ->
     <ul id="hud">
       <li className="logo fa fa-rocket" />

@@ -1,4 +1,3 @@
-Preload = require './preload/load'
 Editor = require './editor'
 Main = require './gui/main'
 em = require  './event_manager'
@@ -9,11 +8,8 @@ class Application
     $(window).keyup (e) -> em.call 'keyup', [e]
 
     React.render(Main(), document.getElementById('content'))
-    Preload.start @loadComplete
 
-  loadComplete: =>
-    @editor = new Editor @
-    em.call "add-layer", ["layer 1"]
+    @editor = new Editor()
 
 app = new Application()
 app.init()
