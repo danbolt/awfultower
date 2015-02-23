@@ -56,7 +56,6 @@ module.exports = class Editor
     else if e.keyCode is 82
       @undo.redo()
 
-
   addLayer: (name) =>
     if Object.keys(@layers).length
       @layers[name] = @map.createBlankLayer name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
@@ -98,12 +97,13 @@ module.exports = class Editor
       w = bounds.maxX - bounds.minX
       h = bounds.maxY - bounds.minY
 
-      @fill bounds.minX, bounds.minY, w, h, @curentLayer
+      @fill bounds.minX, bounds.minY, w, h, @currentLayer
 
     undoAction = if @erase then '-' else '+'
 
     if @modifiedTiles and Object.keys(@modifiedTiles).length
       @undo.push undoAction, @modifiedTiles
+
     @modifiedTiles = null
 
   mouseMove: =>
@@ -177,10 +177,11 @@ module.exports = class Editor
     Minimap.addTile index, x, y
 
   removeTile: (x, y, layer, addToUndo = true) =>
+    return unless (tile = @map.getTile(x, y, layer))
     if addToUndo
       @modifiedTiles[x] ||= {}
       @modifiedTiles[x][y] =
-        previous: @map.getTile(x, y, layer)
+        previous: tile.index
         layer: layer
 
     @map.removeTile x, y, layer

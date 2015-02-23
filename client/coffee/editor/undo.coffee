@@ -6,11 +6,9 @@ module.exports = class Undo
     @_undo = []
     @_redo = []
 
-
   # Add an item to the undo stack. When you do this, clear the redo stack
   push: (action, tiles) =>
     @_redo = []
-
     _tiles = []
     for x, ys of tiles
       for y, tile of ys
@@ -19,29 +17,35 @@ module.exports = class Undo
     @_undo.push {action: action, tiles: _tiles}
 
   # Undo an event, push that event onto the redo stack
-  undo: =>
+  undo: ->
     return unless (item = @_undo.pop())
     @performAction item
-    item.action = if item.action is '+' then '-' else '+'
-    @_redo.push item
+    @_redo.push @swap(item)
 
   # Redo an event, push that event onto the undo stack
   redo: ->
     return unless (item = @_redo.pop())
     @performAction item
-    item.action = if item.action is '+' then '-' else '+'
-    @_undo.push item
+    @_undo.push @swap(item)
 
   # Perform the undo/redo action. Just do the opposite of the initial event
   performAction: (item) =>
     action = item.action
     for t in item.tiles
       if action is '-'
-        @delegate.addTile t.index, t.x, t.y, t.layer, false
+        @delegate.addTile t.previous, t.x, t.y, t.layer, false
       if action is '+'
         if t.previous?
           @delegate.addTile t.previous, t.x, t.y, t.layer, false
         else
           @delegate.removeTile t.x, t.y, t.layer, false
 
-
+  # turns an add-item into a remove-item and vice versa by switching the action
+  # and swapping tile.index <-> tile.previous for each tile
+  swap: (item) ->
+    item.action = if item.action is '+' then '-' else '+'
+    for tile in item.tiles
+      prev = tile.previous
+      tile.previous = tile.index
+      tile.index = prev
+    item
