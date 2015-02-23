@@ -1,45 +1,47 @@
+# A pretty straight forward undo/redo history.
+# Events are grouped together, for example a mouse down -> move -> up sequence
+# would mean that every tile added in between down and up is in one event
 module.exports = class Undo
-  constructor: ->
+  constructor: (@delegate) ->
     @_undo = []
     @_redo = []
 
-  push: (action, tile, old) ->
+
+  # Add an item to the undo stack. When you do this, clear the redo stack
+  push: (action, tiles) =>
     @_redo = []
-    {x,y} = tile.pos
-    index = tile.tile
-    item =
-      x: x
-      y: y
-      action: action
-      tileIndex: index
 
-    item.previousTileIndex = old if old?
-    @_undo.push item
+    _tiles = []
+    for x, ys of tiles
+      for y, tile of ys
+        _tiles.push _.extend(tile, {x: x, y: y})
 
-  undo: ->
-    return null unless (item = @_undo.pop())
+    @_undo.push {action: action, tiles: _tiles}
+
+  # Undo an event, push that event onto the redo stack
+  undo: =>
+    return unless (item = @_undo.pop())
+    @performAction item
+    item.action = if item.action is '+' then '-' else '+'
     @_redo.push item
-    params = {x: item.x, y: item.y}
 
-    if item.previousTileIndex? and item.action is '+'
-      params.action = '+'
-      params.tile = item.previousTileIndex
-    else if item.action is '+'
-      params.action = '-'
-    else if item.action is '-'
-      params.action = '+'
-      params.tile = item.tileIndex
-
-    params
-
+  # Redo an event, push that event onto the undo stack
   redo: ->
-    return null unless (item = @_redo.pop())
+    return unless (item = @_redo.pop())
+    @performAction item
+    item.action = if item.action is '+' then '-' else '+'
     @_undo.push item
 
-    action: item.action
-    x: item.x
-    y: item.y
-    tile: item.tileIndex
-
+  # Perform the undo/redo action. Just do the opposite of the initial event
+  performAction: (item) =>
+    action = item.action
+    for t in item.tiles
+      if action is '-'
+        @delegate.addTile t.index, t.x, t.y, t.layer, false
+      if action is '+'
+        if t.previous?
+          @delegate.addTile t.previous, t.x, t.y, t.layer, false
+        else
+          @delegate.removeTile t.x, t.y, t.layer, false
 
 

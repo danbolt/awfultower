@@ -1,5 +1,6 @@
 Minimap = require './minimap'
 Stamp = require './lib/stamp'
+Undo = require './undo'
 
 em = require '../event_manager'
 
@@ -19,6 +20,7 @@ module.exports = class Editor
       render: @render
 
     @layers = {}
+    @undo = new Undo @
 
     em.register 'add-layer', @addLayer
     em.register 'change-layer', @changeLayer
@@ -26,6 +28,7 @@ module.exports = class Editor
     em.register 'lock-layer', @lockLayer
     em.register 'reorder-layers', @reorderLayers
     em.register 'toggle-erase', @toggleErase
+    em.register 'keydown', @keydown
 
   preload: =>
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
@@ -41,11 +44,18 @@ module.exports = class Editor
 
     @addLayer("layer 1")
 
-    @game.input.addMoveCallback @mouseMove, @
     @game.input.onUp.add @mouseUp, @
+    @game.input.addMoveCallback @mouseMove, @
 
     Stamp.init @game
     Minimap.init @
+
+  keydown: (e) =>
+    if e.keyCode is 85
+      @undo.undo()
+    else if e.keyCode is 82
+      @undo.redo()
+
 
   addLayer: (name) =>
     if Object.keys(@layers).length
@@ -64,6 +74,7 @@ module.exports = class Editor
     layer.visible = not layer.visible
 
   changeLayer: (name) =>
+    return if name is @currentLayer?.name
     @currentLayer = @layers[name]
     for n, layer of @layers
       layer.alpha = 1 if n is name
@@ -89,6 +100,12 @@ module.exports = class Editor
 
       @fill bounds.minX, bounds.minY, w, h, @curentLayer
 
+    undoAction = if @erase then '-' else '+'
+
+    if @modifiedTiles and Object.keys(@modifiedTiles).length
+      @undo.push undoAction, @modifiedTiles
+    @modifiedTiles = null
+
   mouseMove: =>
     x = @currentLayer.getTileX(@game.input.activePointer.worldX)
     y = @currentLayer.getTileY(@game.input.activePointer.worldY)
@@ -96,6 +113,9 @@ module.exports = class Editor
     shift = @game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)
     pointer = @game.input.mousePointer.isDown
 
+    # checks if mouse is being held
+    if pointer and not @modifiedTiles
+      @modifiedTiles = {}
     if shift and pointer and not @bandFill
       Stamp.beginBandFill x, y
       @bandFill = true
@@ -104,13 +124,11 @@ module.exports = class Editor
       Stamp.endBandFill()
     else if pointer and not @currentLayer.locked and not @bandFill
       if @erase
-        @map.removeTile x, y, @currentLayer
-        Minimap.removeTile x, y
+        @removeTile x, y, @currentLayer
       else
         for i in [0..Stamp.tiles.length-1]
           for j in [0..Stamp.tiles[i].length-1]
-            @map.putTile(Stamp.tiles[i][j], x + i, y + j, @currentLayer)
-            Minimap.addTile Stamp.tiles[i][j], x+i, y+j
+            @addTile Stamp.tiles[i][j], x + i, y + j, @currentLayer
 
     Stamp.updateHighlight x, y
 
@@ -133,20 +151,40 @@ module.exports = class Editor
     if @erase
       for i in [0..w-1]
         for j in [0..h-1]
-          @map.removeTile x+i, y+j, layer
-          Minimap.removeTile x+i, y+j
+          @removeTile x+i, y+j, layer
     else
       if Stamp.tiles[0].length is 1
-        @map.fill Stamp.tiles[0][0], x, y, w, h, layer
-        Minimap.fill Stamp.tiles[0][0], x, y, w, h
+        for i in [0..w-1]
+          for j in [0..h-1]
+            @addTile Stamp.tiles[0][0], x+i, y+j, layer
       else
         stampW = Stamp.tiles.length
         stampH = Stamp.tiles[0].length
         for i in [0..w-1]
           for j in [0..h-1]
-            @map.putTile Stamp.tiles[i%stampW][j%stampH], x + i, y + j, @currentLayer
-            Minimap.addTile Stamp.tiles[i%stampW][j%stampH], x + i, y + j
+            @addTile Stamp.tiles[i%stampW][j%stampH], x + i, y + j, @currentLayer
 
+  addTile: (index, x, y, layer, addToUndo = true) =>
+    return if @map.getTile(x, y, layer)?.index is index
+    if addToUndo
+      @modifiedTiles[x] ||= {}
+      @modifiedTiles[x][y] =
+        index: index
+        previous: @map.getTile(x, y, layer)?.index
+        layer: layer
+
+    @map.putTile index, x, y, layer
+    Minimap.addTile index, x, y
+
+  removeTile: (x, y, layer, addToUndo = true) =>
+    if addToUndo
+      @modifiedTiles[x] ||= {}
+      @modifiedTiles[x][y] =
+        previous: @map.getTile(x, y, layer)
+        layer: layer
+
+    @map.removeTile x, y, layer
+    Minimap.removeTile x, y
 
 
 
