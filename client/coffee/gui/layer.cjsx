@@ -2,33 +2,31 @@ em = require '../event_manager'
 
 module.exports = React.createClass
   displayName: "Layer"
+  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
 
-  getInitialState: ->
-    locked: false
-    visible: true
+  getStateFromFlux: ->
+    @getFlux().store("Store").getState()
 
   changeLayer: (e) ->
-    @props.layerSelected @props.name
-    em.call 'change-layer', [@props.name]
+    @getFlux().actions.changeLayer @props.layer.name
 
   hideLayer: (e) ->
-    @setState visible: not @state.visible
-    em.call 'hide-layer', [@props.name]
+    @getFlux().actions.toggleLayerVisible @props.layer.name
     e.stopPropagation()
 
   lockLayer: (e) ->
-    @setState locked: not @state.locked
-    em.call 'lock-layer', [@props.name]
+    @getFlux().actions.toggleLayerLocked @props.layer.name
     e.stopPropagation()
 
   render: ->
+    layer = @props.layer
     cx = "layer"
-    cx += " hidden" unless @state.visible
-    cx += " locked" if @state.locked
-    cx += " current" if @props.current
+    cx += " hidden" unless layer.visible
+    cx += " locked" if layer.locked
+    cx += " current" if @state.currentLayer is layer.name
 
-    <li className={cx} onClick={@changeLayer} data-name={@props.name}>
-      {@props.name}
+    <li className={cx} onClick={@changeLayer} data-name={layer.name}>
+      {layer.name}
       <div className="controls">
         <div className="fa fa-eye visibility" onClick={@hideLayer} />
         <div className="fa fa-lock locked" onClick={@lockLayer} />

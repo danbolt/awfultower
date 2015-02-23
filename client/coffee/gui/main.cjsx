@@ -6,17 +6,17 @@ module.exports = React.createClass
   displayName: "Main"
   render: ->
     <div>
-      <Nav />
+      <Nav flux={@props.flux} />
       <div id="scene"></div>
       <section id="panels">
 
-        <Legend />
+        <Legend flux={@props.flux} />
         <div className="panel minimap">
           <h2> MINIMAP </h2>
           <div id="minimap" />
         </div>
 
-        <Layers />
+        <Layers flux={@props.flux} />
 
       </section>
     </div>

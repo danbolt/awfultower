@@ -22,12 +22,12 @@ module.exports = class Editor
     @layers = {}
     @undo = new Undo @
 
-    em.register 'add-layer', @addLayer
-    em.register 'change-layer', @changeLayer
-    em.register 'hide-layer', @hideLayer
-    em.register 'lock-layer', @lockLayer
-    em.register 'reorder-layers', @reorderLayers
-    em.register 'toggle-erase', @toggleErase
+    em.register 'ADD_LAYER', @addLayer
+    em.register 'CHANGE_LAYER', @changeLayer
+    em.register 'TOGGLE_LAYER_VISIBLE', @hideLayer
+    em.register 'TOGGLE_LAYER_LOCKED', @lockLayer
+    em.register 'REORDER_LAYERS', @reorderLayers
+    em.register 'TOGGLE_ERASE', @toggleErase
     em.register 'keydown', @keydown
 
   preload: =>
@@ -62,14 +62,16 @@ module.exports = class Editor
     else
       @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
     @layers[name].resizeWorld()
+    @layers[name].visible = true
+    @layers[name].locked = false
     @changeLayer name
 
-  lockLayer: (name) =>
-    return unless (layer = @layers[name])
+  lockLayer: (p) =>
+    return unless (layer = @layers[p.layer])
     layer.locked = not layer.locked
 
-  hideLayer: (name) =>
-    return unless (layer = @layers[name])
+  hideLayer: (p) =>
+    return unless (layer = @layers[p.layer])
     layer.visible = not layer.visible
 
   changeLayer: (name) =>

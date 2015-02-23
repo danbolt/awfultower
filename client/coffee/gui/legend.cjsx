@@ -4,6 +4,7 @@ em = require '../event_manager'
 
 module.exports = React.createClass
   displayName: "Legend"
+  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
 
   isMouseDown: false
   initialMousePosition: {}
@@ -14,6 +15,10 @@ module.exports = React.createClass
       top: 0
       width: tileWidth
       height: tileHeight
+
+  getStateFromFlux: ->
+    flux = @getFlux()
+    flux.store("Store").getState()
 
   position: (e) ->
     parent = @refs.panel.getDOMNode()
@@ -56,6 +61,8 @@ module.exports = React.createClass
       top: minY * tileHeight
       width: ((maxX - minX) + 1) * tileWidth
       height: ((maxY - minY) + 1) * tileHeight
+
+    @getFlux().actions.toggleErase false
 
   render: ->
     <div className="panel legend" ref="panel">

@@ -3,23 +3,23 @@ Layer = require './layer'
 
 module.exports = React.createClass
   displayName: "Layers Panel"
+  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
 
-  getInitialState: ->
-    layers: ["layer 1"]
-    currentLayer: "layer 1"
+  getStateFromFlux: ->
+    flux = @getFlux()
+    flux.store("Store").getState()
 
   layerSelected: (layer) ->
     @setState(currentLayer: layer) if layer in @state.layers
 
   addLayer: ->
     layers = @state.layers
-    layer = "layer #{layers.length + 1}"
-    layers.push layer
+    layer = "layer #{Object.keys(layers).length + 1}"
 
-    @setState {layers: layers, currentLayer: layer}, ->
-      em.call 'add-layer', [layer]
+    @getFlux().actions.addLayer layer
 
   componentDidMount: ->
+    @getFlux().actions.addLayer "layer 1"
     @sortable()
 
   sortable: ->
@@ -43,11 +43,13 @@ module.exports = React.createClass
       $(layer).data "name"
 
     layers = $.makeArray(layers)
-
-    @setState {layers: layers}, ->
-      em.call 'reorder-layers', [layers]
+    @getFlux().actions.reorderLayers layers
 
   render: ->
+
+    layers = _.values @state.layers
+    layers = _.sortBy layers, "order"
+
     <div className="panel layers">
       <h2>
         LAYERS
@@ -56,9 +58,8 @@ module.exports = React.createClass
 
       <ul ref="list">
         {
-          for layer, i in @state.layers
-            current = layer is @state.currentLayer
-            <Layer name={layer} key={Math.random()} current={current} layerSelected={@layerSelected}/>
+          for layer in layers
+            <Layer layer={layer} key={Math.random()} layerSelected={@layerSelected} flux={@props.flux} />
         }
       </ul>
     </div>

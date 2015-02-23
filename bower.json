@@ -10,7 +10,8 @@
     "normalize.css": "~3.0.2",
     "async": "0.9.2",
     "jquery-ui": "~1.11.3",
-    "phaser": "~2.2.2"
+    "phaser": "~2.2.2",
+    "fluxxor": "~1.5.2"
   },
   "overrides": {
     "underscore": {
