@@ -11,6 +11,7 @@ MAP_SIZE = {x: 100, y: 100}
 module.exports = class Editor
   constructor: ->
 
+    # When a flux action is called call the appropriate method here
     fluxMaps =
       ADD_LAYER: @addLayer
       CHANGE_LAYER: @changeLayer
@@ -19,17 +20,17 @@ module.exports = class Editor
       REORDER_LAYERS: @reorderLayers
       TOGGLE_ERASE: @toggleErase
 
+    flux.store("Store").on 'change', (type, rest...) =>
+      fluxMaps[type]?(rest...)
+
     @game = new Phaser.Game 800, 800, Phaser.AUTO, "scene",
       preload: @preload
       create: @create
       update: @update
-      render: @render
+      render: ->
 
     @layers = {}
     @undo = new Undo @
-
-    flux.store("Store").on 'change', (type, rest...) =>
-      fluxMaps[type]?(rest...)
 
   preload: =>
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
@@ -48,6 +49,7 @@ module.exports = class Editor
     @game.input.onUp.add @mouseUp, @
     @game.input.addMoveCallback @mouseMove, @
 
+    # Register undo and redo
     undoKey = @game.input.keyboard.addKey(Phaser.Keyboard.U)
     redoKey = @game.input.keyboard.addKey(Phaser.Keyboard.R)
     undoKey.onDown.add (=> @undo.undo()), @
@@ -56,6 +58,7 @@ module.exports = class Editor
     Stamp.init @game
     Minimap.init @
 
+  # Add a new phaser.tileMapLayer to our game
   addLayer: (name) =>
     if Object.keys(@layers).length
       @layers[name] = @map.createBlankLayer name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
@@ -90,6 +93,7 @@ module.exports = class Editor
     Stamp.setErase @erase
 
   mouseUp: (e) =>
+    # If we are band filling, fill the region
     if @bandFill
       @bandFill = false
 
@@ -101,6 +105,7 @@ module.exports = class Editor
 
       @fill bounds.minX, bounds.minY, w, h, @currentLayer
 
+    # Add an undo item. Either add or remove, and pass the modified tiles
     undoAction = if @erase then '-' else '+'
 
     if @modifiedTiles and Object.keys(@modifiedTiles).length
@@ -118,16 +123,21 @@ module.exports = class Editor
     # checks if mouse is being held
     if pointer and not @modifiedTiles
       @modifiedTiles = {}
+    # We want to start bandfilling
     if shift and pointer and not @bandFill
       Stamp.beginBandFill x, y
       @bandFill = true
+    # We want to cancel bandfilling, but not actually fill
     else if not shift and @bandFill
       @bandFill = false
       Stamp.endBandFill()
+    # Otherwise just paint, picasso!
     else if pointer and not @currentLayer.locked and not @bandFill
+      # ...Or erase
       if @erase
         @removeTile x, y, @currentLayer
       else
+        # Add all tiles in a multi tile select
         for i in [0..Stamp.tiles.length-1]
           for j in [0..Stamp.tiles[i].length-1]
             @addTile Stamp.tiles[i][j], x + i, y + j, @currentLayer
@@ -135,6 +145,7 @@ module.exports = class Editor
     Stamp.updateHighlight x, y
 
   update: =>
+    # Move the camera
     if @cursors.left.isDown then @game.camera.x -= tileWidth / 2
     if @cursors.right.isDown then @game.camera.x += tileWidth / 2
 
@@ -143,22 +154,29 @@ module.exports = class Editor
 
     Minimap.moveHighlight @game.camera.x / tileWidth, @game.camera.y / tileHeight
 
+  # Called from minimap clicks. Move the map to an absolute position
   moveCamera: (x, y) =>
     @game.camera.x = x * MAP_SIZE.x * tileWidth - 400
     @game.camera.y = y * MAP_SIZE.y * tileHeight - 400
 
-  render: ->
-
+  # Fill in or remove a region
+  # x and y are the min point of the region (top left)
+  # w, h are the width
+  # layer is the tileMapLayer
+  # x, y, w, h are in tile coordinates
   fill: (x, y, w, h, layer) ->
     if @erase
       for i in [0..w-1]
         for j in [0..h-1]
           @removeTile x+i, y+j, layer
     else
+      # Paint a single tile
       if Stamp.tiles[0].length is 1
         for i in [0..w-1]
           for j in [0..h-1]
             @addTile Stamp.tiles[0][0], x+i, y+j, layer
+
+      # Repeat paint a multiselect tile
       else
         stampW = Stamp.tiles.length
         stampH = Stamp.tiles[0].length
@@ -166,6 +184,9 @@ module.exports = class Editor
           for j in [0..h-1]
             @addTile Stamp.tiles[i%stampW][j%stampH], x + i, y + j, @currentLayer
 
+  # Add a tile to the map, add an undo action, basically just if this method
+  # isn't being called as the result of an undo action, and add the tile to the
+  # minimap
   addTile: (index, x, y, layer, addToUndo = true) =>
     return if @map.getTile(x, y, layer)?.index is index
     if addToUndo
@@ -178,6 +199,9 @@ module.exports = class Editor
     @map.putTile index, x, y, layer
     Minimap.addTile index, x, y
 
+  # Remove a tile to the map, add an undo action, basically just if this method
+  # isn't being called as the result of an undo action, and remove the tile
+  # from the minimap
   removeTile: (x, y, layer, addToUndo = true) =>
     return unless (tile = @map.getTile(x, y, layer))
     if addToUndo
