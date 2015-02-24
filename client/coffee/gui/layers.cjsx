@@ -1,4 +1,3 @@
-em = require '../event_manager'
 Layer = require './layer'
 
 module.exports = React.createClass

@@ -2,16 +2,22 @@ Minimap = require './minimap'
 Stamp = require './lib/stamp'
 Undo = require './undo'
 
-em = require '../event_manager'
-
-GRID_COLOR = "#e5e5e5"
-
-MAP_SIZE = {x: 100, y: 100}
+_c = require '../flux/constants'
 
 {tileWidth, tileHeight} = require './utils'
 
+MAP_SIZE = {x: 100, y: 100}
+
 module.exports = class Editor
   constructor: ->
+
+    fluxMaps =
+      ADD_LAYER: @addLayer
+      CHANGE_LAYER: @changeLayer
+      TOGGLE_LAYER_VISIBLE: @hideLayer
+      TOGGLE_LAYER_LOCKED: @lockLayer
+      REORDER_LAYERS: @reorderLayers
+      TOGGLE_ERASE: @toggleErase
 
     @game = new Phaser.Game 800, 800, Phaser.AUTO, "scene",
       preload: @preload
@@ -22,13 +28,8 @@ module.exports = class Editor
     @layers = {}
     @undo = new Undo @
 
-    em.register 'ADD_LAYER', @addLayer
-    em.register 'CHANGE_LAYER', @changeLayer
-    em.register 'TOGGLE_LAYER_VISIBLE', @hideLayer
-    em.register 'TOGGLE_LAYER_LOCKED', @lockLayer
-    em.register 'REORDER_LAYERS', @reorderLayers
-    em.register 'TOGGLE_ERASE', @toggleErase
-    em.register 'keydown', @keydown
+    flux.store("Store").on 'change', (type, rest...) =>
+      fluxMaps[type]?(rest...)
 
   preload: =>
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
@@ -47,14 +48,13 @@ module.exports = class Editor
     @game.input.onUp.add @mouseUp, @
     @game.input.addMoveCallback @mouseMove, @
 
+    undoKey = @game.input.keyboard.addKey(Phaser.Keyboard.U)
+    redoKey = @game.input.keyboard.addKey(Phaser.Keyboard.R)
+    undoKey.onDown.add (=> @undo.undo()), @
+    redoKey.onDown.add (=> @undo.redo()), @
+
     Stamp.init @game
     Minimap.init @
-
-  keydown: (e) =>
-    if e.keyCode is 85
-      @undo.undo()
-    else if e.keyCode is 82
-      @undo.redo()
 
   addLayer: (name) =>
     if Object.keys(@layers).length
@@ -66,13 +66,13 @@ module.exports = class Editor
     @layers[name].locked = false
     @changeLayer name
 
-  lockLayer: (p) =>
-    return unless (layer = @layers[p.layer])
-    layer.locked = not layer.locked
+  lockLayer: (layer, locked) =>
+    return unless (layer = @layers[layer])
+    layer.locked = locked
 
-  hideLayer: (p) =>
-    return unless (layer = @layers[p.layer])
-    layer.visible = not layer.visible
+  hideLayer: (layer, visible) =>
+    return unless (layer = @layers[layer])
+    layer.visible = visible
 
   changeLayer: (name) =>
     return if name is @currentLayer?.name
@@ -85,8 +85,8 @@ module.exports = class Editor
     for layer in layers
       @layers[layer].bringToTop()
 
-  toggleErase: =>
-    @erase = not @erase
+  toggleErase: (erase) =>
+    @erase = erase
     Stamp.setErase @erase
 
   mouseUp: (e) =>

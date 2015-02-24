@@ -1,5 +1,3 @@
-em = require '../event_manager'
-
 module.exports = React.createClass
   displayName: "Layer"
   mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]

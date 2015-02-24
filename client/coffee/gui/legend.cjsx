@@ -1,5 +1,4 @@
 Stamp = require '../editor/lib/stamp'
-em = require '../event_manager'
 {tileWidth, tileHeight} = require '../editor/utils'
 
 module.exports = React.createClass
