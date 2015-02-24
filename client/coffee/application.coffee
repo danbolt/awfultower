@@ -8,12 +8,12 @@ flux = new Fluxxor.Flux {Store: new Store()}, Actions
 window.flux = flux
 
 flux.on "dispatch", (type, payload) ->
-  console.log "[Dispatch]", type, payload
+  if window.debug_on
+    console.log "[Dispatch]", type, payload
 
 class Application
   init: ->
     React.render(Main(flux: flux), document.getElementById('content'))
-
     @editor = new Editor()
 
 app = new Application()

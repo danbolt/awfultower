@@ -15,26 +15,26 @@ module.exports = Fluxxor.createStore
       _c.REORDER_LAYERS, @reorderLayers
     )
 
-  toggleErase: (erase) ->
+  toggleErase: (erase, type) ->
     e = if erase? then erase else not @erase
     @erase = e
-    @emit 'change', _c.TOGGLE_ERASE, @erase
+    @emit 'change', type, @erase
 
-  toggleLayerLocked: (p) ->
+  toggleLayerLocked: (p, type) ->
     l = if p.locked? then p.locked else not @layers[p.layer].locked
     @layers[p.layer].locked = l
-    @emit 'change', _c.TOGGLE_LAYER_LOCKED, p.layer, l
+    @emit 'change', type, p.layer, l
 
-  toggleLayerVisible: (p) ->
+  toggleLayerVisible: (p, type) ->
     v = if p.visible? then p.visible else not @layers[p.layer].visible
     @layers[p.layer].visible = v
-    @emit 'change', _c.TOGGLE_LAYER_VISIBLE, p.layer, v
+    @emit 'change', type, p.layer, v
 
-  changeLayer: (name) ->
+  changeLayer: (name, type) ->
     @currentLayer = name
-    @emit 'change', _c.CHANGE_LAYER, name
+    @emit 'change', type, name
 
-  addLayer: (name) ->
+  addLayer: (name, type) ->
     @layers[name] =
       name: name
       visible: true
@@ -43,13 +43,13 @@ module.exports = Fluxxor.createStore
 
     @currentLayer = name
 
-    @emit 'change', _c.ADD_LAYER, name
+    @emit 'change', type, name
 
-  reorderLayers: (layers) ->
+  reorderLayers: (layers, type) ->
     _.each @layers, (layer) ->
       layer.order = layers.indexOf(layer.name)
 
-    @emit 'change', _c.REORDER_LAYERS, layers
+    @emit 'change', type, layers
 
   getState: ->
     erase: @erase
