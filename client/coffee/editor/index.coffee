@@ -180,22 +180,22 @@ module.exports = class Editor
   # x, y, w, h are in tile coordinates
   fill: (x, y, w, h, layer) ->
     if @erase
-      for i in [0..w-1]
-        for j in [0..h-1]
+      for i in [0..w]
+        for j in [0..h]
           @removeTile x+i, y+j, layer
     else
       # Paint a single tile
       if Stamp.tiles[0].length is 1
-        for i in [0..w-1]
-          for j in [0..h-1]
+        for i in [0..w]
+          for j in [0..h]
             @addTile Stamp.tiles[0][0], x+i, y+j, layer
 
       # Repeat paint a multiselect tile
       else
         stampW = Stamp.tiles.length
         stampH = Stamp.tiles[0].length
-        for i in [0..w-1]
-          for j in [0..h-1]
+        for i in [0..w]
+          for j in [0..h]
             @addTile Stamp.tiles[i%stampW][j%stampH], x + i, y + j, @currentLayer
 
   # Add a tile to the map, add an undo action, basically just if this method

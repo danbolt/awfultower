@@ -70,10 +70,6 @@ class Stamp
       maxX = Math.max(@initialBandFillPos.x, x) # bottom right
       maxY = Math.max(@initialBandFillPos.y, y) # bottom right
 
-      # If we are draging towards top left, we need to add an extra to the max
-      maxX++ if maxX is @initialBandFillPos.x
-      maxY++ if maxY is @initialBandFillPos.y
-
       x = minX
       y = minY
 
@@ -85,12 +81,12 @@ class Stamp
       # If we aren't erasing, fill in the preview. Repeat if have multi selected
       if not @erase
         @preview.removeAll()
-        for i in [0..(maxX-minX) - 1]
-          for j in [0..(maxY-minY) - 1]
+        for i in [0..(maxX-minX)]
+          for j in [0..(maxY-minY)]
             sprite = @game.add.sprite i*tileWidth, j*tileWidth, 'level', @tiles[i%w][j%h]
             @preview.add sprite
 
-      @changeHighlight maxX - minX, maxY - minY
+      @changeHighlight (maxX - minX) + 1, (maxY - minY) + 1
 
     # Translate to world pos
     @preview.x = x*tileWidth
