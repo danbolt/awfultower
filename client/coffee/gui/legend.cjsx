@@ -38,6 +38,7 @@ module.exports = React.createClass
       @changeHighlight e
 
   mouseUp: (e) ->
+    @isMouseDown = false
     {x,y} = @position e
     initial = @initialMousePosition
     w = @width()
