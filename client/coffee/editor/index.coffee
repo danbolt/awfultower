@@ -51,7 +51,7 @@ module.exports = class Editor
 
     # Register undo and redo
     undoKey = @game.input.keyboard.addKey(Phaser.Keyboard.U)
-    redoKey = @game.input.keyboard.addKey(Phaser.Keyboard.R)
+    redoKey = @game.input.keyboard.addKey(Phaser.Keyboard.Y)
     undoKey.onDown.add (=> @undo.undo()), @
     redoKey.onDown.add (=> @undo.redo()), @
 
@@ -143,6 +143,20 @@ module.exports = class Editor
             @addTile Stamp.tiles[i][j], x + i, y + j, @currentLayer
 
     Stamp.updateHighlight x, y
+
+    if @bandFill
+      canvasX = @currentLayer.getTileX @game.input.activePointer.x
+      canvasY = @currentLayer.getTileY @game.input.activePointer.y
+
+      @panCamera canvasX, canvasY
+
+  # As the cursor gets close to the edge of the map, move the camera
+  panCamera: (x, y) =>
+    if x >= 24 then @game.camera.x += tileWidth
+    else if x is 0 then @game.camera.x -= tileWidth
+
+    if y >= 24 then @game.camera.y += tileHeight
+    else if y is 0 then @game.camera.y -= tileHeight
 
   update: =>
     # Move the camera
