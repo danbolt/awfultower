@@ -33,6 +33,10 @@ module.exports = React.createClass
     @isMouseDown = true
     @initialMousePosition = @position e
 
+  mouseMove: (e) ->
+    if @isMouseDown
+      @changeHighlight e
+
   mouseUp: (e) ->
     {x,y} = @position e
     initial = @initialMousePosition
@@ -55,13 +59,24 @@ module.exports = React.createClass
 
       Stamp.setMultiple tiles
 
+    @changeHighlight e
+    @getFlux().actions.toggleErase false
+
+  changeHighlight: (e) ->
+
+    {x,y} = @position e
+    initial = @initialMousePosition
+
+    minX = if x <= initial.x then x else initial.x
+    maxX = if x >= initial.x then x else initial.x
+    minY = if y <= initial.y then y else initial.y
+    maxY = if y >= initial.y then y else initial.y
+
     @setState highlightStyle:
       left: minX * tileWidth
       top: minY * tileHeight
       width: ((maxX - minX) + 1) * tileWidth
       height: ((maxY - minY) + 1) * tileHeight
-
-    @getFlux().actions.toggleErase false
 
   render: ->
     <div className="panel legend" ref="panel">
@@ -70,7 +85,7 @@ module.exports = React.createClass
       </h2>
       <div className="imageContainer">
         <img src="images/level3.png" ref="image"/>
-        <div className="mask" onMouseUp={@mouseUp} onMouseDown={@mouseDown}>
+        <div className="mask" onMouseUp={@mouseUp} onMouseDown={@mouseDown} onMouseMove={@mouseMove} >
           <div className="highlight" style={@state.highlightStyle}/>
         </div>
       </div>
