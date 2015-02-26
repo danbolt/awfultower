@@ -4,7 +4,7 @@ Undo = require './undo'
 
 _c = require '../flux/constants'
 
-{tileWidth, tileHeight} = require './utils'
+{tileWidth, tileHeight, sign} = require './utils'
 
 MAP_SIZE = {x: 100, y: 100}
 
@@ -113,18 +113,38 @@ module.exports = class Editor
 
     @modifiedTiles = null
 
-  mouseMove: =>
+  mouseMove: (e) =>
     x = @currentLayer.getTileX(@game.input.activePointer.worldX)
     y = @currentLayer.getTileY(@game.input.activePointer.worldY)
 
     shift = @game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)
+    space = @game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)
     pointer = @game.input.mousePointer.isDown
 
     # checks if mouse is being held
     if pointer and not @modifiedTiles
       @modifiedTiles = {}
+    # We are holding space, pan the map
+    if pointer and space
+      # The center position of the current drag. Gets updated each time
+      # the camera moves
+      @mouseDrag ?= {x: x, y: y, camera: {x: @game.camera.x, y: @game.camera.y}}
+
+      # Move the camera in the direction of dragging by tileW/H. No matter how
+      # far away you are from the mouseDrag, it only goes one step
+      @game.camera.x = @mouseDrag.camera.x + tileWidth * sign(x - @mouseDrag.x)
+      @mouseDrag.x = x
+      @mouseDrag.camera.x = @game.camera.x
+
+      @game.camera.y = @mouseDrag.camera.y + tileHeight * sign(y - @mouseDrag.y)
+      @mouseDrag.y = y
+      @mouseDrag.camera.y = @game.camera.y
+
+    # Remove the mousedrag object
+    else if @mouseDrag and not (space and pointer)
+      @mouseDrag = null
     # We want to start bandfilling
-    if shift and pointer and not @bandFill
+    else if shift and pointer and not @bandFill
       Stamp.beginBandFill x, y
       @bandFill = true
     # We want to cancel bandfilling, but not actually fill
@@ -226,6 +246,5 @@ module.exports = class Editor
 
     @map.removeTile x, y, layer
     Minimap.removeTile x, y
-
 
 
