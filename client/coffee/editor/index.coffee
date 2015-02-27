@@ -1,6 +1,7 @@
 Minimap = require './minimap'
 Stamp = require './lib/stamp'
 Undo = require './undo'
+Grid = require './grid'
 
 _c = require '../flux/constants'
 
@@ -20,6 +21,7 @@ module.exports = class Editor
       REORDER_LAYERS: @reorderLayers
       TOGGLE_ERASE: @toggleErase
       TOGGLE_GLOBAL_OPACITY: @changeGlobalOpacity
+      TOGGLE_GRID: @toggleGrid
 
     flux.store("Store").on 'change', (type, rest...) =>
       fluxMaps[type]?(rest...)
@@ -56,6 +58,8 @@ module.exports = class Editor
     undoKey.onDown.add (=> @undo.undo()), @
     redoKey.onDown.add (=> @undo.redo()), @
 
+    @grid = new Grid @
+
     Stamp.init @game
     Minimap.init @
 
@@ -85,6 +89,9 @@ module.exports = class Editor
       else
         layer.alpha = 1 if n is name
         layer.alpha = 0.5 if n isnt name
+
+  toggleGrid: (grid) =>
+    @grid.toggle grid
 
   changeLayer: (name) =>
     return if name is @currentLayer?.name
@@ -197,6 +204,8 @@ module.exports = class Editor
 
     Minimap.moveHighlight @game.camera.x / tileWidth, @game.camera.y / tileHeight
 
+    @grid.move @game.camera.x, @game.camera.y
+
   # Called from minimap clicks. Move the map to an absolute position
   moveCamera: (x, y) =>
     @game.camera.x = x * MAP_SIZE.x * tileWidth - 400
@@ -255,5 +264,4 @@ module.exports = class Editor
 
     @map.removeTile x, y, layer
     Minimap.removeTile x, y
-
 

@@ -9,7 +9,6 @@ module.exports = React.createClass
       <Nav flux={@props.flux} />
       <div id="scene"></div>
       <section id="panels">
-
         <Legend flux={@props.flux} />
         <div className="panel minimap">
           <h2> MINIMAP </h2>

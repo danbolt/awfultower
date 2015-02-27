@@ -25,3 +25,6 @@ module.exports =
 
   toggleGlobalOpacity: (opacity) ->
     @dispatch _c.TOGGLE_GLOBAL_OPACITY, opacity
+
+  toggleGrid: (grid) ->
+    @dispatch _c.TOGGLE_GRID, grid

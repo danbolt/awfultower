@@ -101,7 +101,7 @@ class Stamp
     color = if @erase then 0xff0000 else 0xffff00
 
     @highlight.clear()
-    @highlight.lineStyle(2, color, 1)
+    @highlight.lineStyle(1, color, 1)
     @highlight.drawRect 0, 0, w*tileWidth, h*tileHeight
     @preview.add @highlight
 

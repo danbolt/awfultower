@@ -4,6 +4,7 @@ module.exports = Fluxxor.createStore
   initialize: ->
     @erase = false
     @globalOpacity = true
+    @grid = true
     @layers = {}
     @currentLayer = null
 
@@ -15,7 +16,13 @@ module.exports = Fluxxor.createStore
       _c.CHANGE_LAYER, @changeLayer
       _c.REORDER_LAYERS, @reorderLayers
       _c.TOGGLE_GLOBAL_OPACITY, @toggleGlobalOpacity
+      _c.TOGGLE_GRID, @toggleGrid
     )
+
+  toggleGrid: (grid, type) ->
+    g = if grid? then grid else not @grid
+    @grid = g
+    @emit 'change', type, g
 
   toggleGlobalOpacity: (opacity, type) ->
     o = if opacity? then opacity else not @globalOpacity
@@ -62,4 +69,5 @@ module.exports = Fluxxor.createStore
     erase: @erase
     globalOpacity: @globalOpacity
     layers: @layers
+    grid: @grid
     currentLayer: @currentLayer
