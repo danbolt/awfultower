@@ -5,41 +5,35 @@
       background-color: lighten($highlight, 15%)
       padding: 4px
 
+  .controls
+    display: inline-block
+    float: right
+    margin-right: 10px
+
+    button
+      color: white
+
+      &:hover, &.active
+        color: $highlight
+
+      &:nth-last-child(n+2)
+        margin-right: 10px
+
   .layer
     color: $darkHighlight
     padding: 4px 10px
     cursor: pointer
 
-    .controls
-      display: inline-block
-      float: right
-      padding-right: 10px
+    .controls button
+      color: black
 
-      div
-        display: inline-block
-
-      div:nth-child(n+2)
-        margin-left: 6px
-
-    &.hidden .visibility
-      color: $highlight
-
-    &.locked .locked
-      color: $highlight
+      &:hover
+        color: $highlight
 
     &.current
       background-color: $highlight
 
-      &.hidden .visibility
+      .controls button:hover
         color: white
 
-      &.locked .locked
-        color: white
 
-  .add-layer
-    float: right
-    margin-right: 10px
-    color: white
-
-    &:hover
-      color: $highlight

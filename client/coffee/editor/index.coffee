@@ -19,6 +19,7 @@ module.exports = class Editor
       TOGGLE_LAYER_LOCKED: @lockLayer
       REORDER_LAYERS: @reorderLayers
       TOGGLE_ERASE: @toggleErase
+      TOGGLE_GLOBAL_OPACITY: @changeGlobalOpacity
 
     flux.store("Store").on 'change', (type, rest...) =>
       fluxMaps[type]?(rest...)
@@ -76,6 +77,14 @@ module.exports = class Editor
   hideLayer: (layer, visible) =>
     return unless (layer = @layers[layer])
     layer.visible = visible
+
+  changeGlobalOpacity: (opacity) =>
+    for n, layer of @layers
+      if opacity is false
+        layer.alpha = 1
+      else
+        layer.alpha = 1 if n is name
+        layer.alpha = 0.5 if n isnt name
 
   changeLayer: (name) =>
     return if name is @currentLayer?.name

@@ -23,10 +23,13 @@ module.exports = React.createClass
     cx += " locked" if layer.locked
     cx += " current" if @state.currentLayer is layer.name
 
+    eye = if layer.visible then "eye" else "eye-slash"
+    lock = if layer.locked then "lock" else "unlock-alt"
+
     <li className={cx} onClick={@changeLayer} data-name={layer.name}>
       {layer.name}
       <div className="controls">
-        <div className="fa fa-eye visibility" onClick={@hideLayer} />
-        <div className="fa fa-lock locked" onClick={@lockLayer} />
+        <button className="fa fa-#{eye} visibility" onClick={@hideLayer} />
+        <button className="fa fa-#{lock} locked" onClick={@lockLayer} />
       </div>
     </li>

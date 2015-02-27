@@ -3,6 +3,7 @@ _c = require './constants'
 module.exports = Fluxxor.createStore
   initialize: ->
     @erase = false
+    @globalOpacity = true
     @layers = {}
     @currentLayer = null
 
@@ -13,12 +14,18 @@ module.exports = Fluxxor.createStore
       _c.TOGGLE_LAYER_VISIBLE, @toggleLayerVisible
       _c.CHANGE_LAYER, @changeLayer
       _c.REORDER_LAYERS, @reorderLayers
+      _c.TOGGLE_GLOBAL_OPACITY, @toggleGlobalOpacity
     )
+
+  toggleGlobalOpacity: (opacity, type) ->
+    o = if opacity? then opacity else not @globalOpacity
+    @globalOpacity = o
+    @emit 'change', type, o
 
   toggleErase: (erase, type) ->
     e = if erase? then erase else not @erase
     @erase = e
-    @emit 'change', type, @erase
+    @emit 'change', type, e
 
   toggleLayerLocked: (p, type) ->
     l = if p.locked? then p.locked else not @layers[p.layer].locked
@@ -53,5 +60,6 @@ module.exports = Fluxxor.createStore
 
   getState: ->
     erase: @erase
+    globalOpacity: @globalOpacity
     layers: @layers
     currentLayer: @currentLayer

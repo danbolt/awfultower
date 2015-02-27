@@ -17,6 +17,9 @@ module.exports = React.createClass
 
     @getFlux().actions.addLayer layer
 
+  changeGlobalOpacity: ->
+    @getFlux().actions.toggleGlobalOpacity()
+
   componentDidMount: ->
     @getFlux().actions.addLayer "layer 1"
     @sortable()
@@ -49,10 +52,16 @@ module.exports = React.createClass
     layers = _.values @state.layers
     layers = _.sortBy layers, "order"
 
+    opacityClass = "opacity fa "
+    opacityClass += if @state.globalOpacity then "fa-eye" else "fa-eye-slash"
+
     <div className="panel layers">
       <h2>
         LAYERS
-        <button className="add-layer fa fa-plus" onClick={@addLayer} />
+        <div className="controls">
+          <button className={opacityClass} onClick={@changeGlobalOpacity} />
+          <button className="add-layer fa fa-plus" onClick={@addLayer} />
+        </div>
       </h2>
 
       <ul ref="list">
