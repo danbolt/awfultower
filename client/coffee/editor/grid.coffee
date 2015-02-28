@@ -5,6 +5,8 @@ module.exports = class Grid
   constructor: (@delegate) ->
     @game = @delegate.game
 
+    @group = @game.add.group()
+
     # The horizontal and vertical lines are drawn in a serpentine pattern
     @horiz = @game.add.graphics()
     @horiz.lineStyle(1,0x3d3d3d, 1)
@@ -22,8 +24,12 @@ module.exports = class Grid
       @vert.lineTo i, 800
       @vert.moveTo i + tileHeight, 0
 
+    @group.add @horiz
+    @group.add @vert
+
   toggle: (grid) ->
-    line.visible = grid for line in @lines
+    @horiz.visible = grid
+    @vert.visible = grid
 
   # The grid is small. Only the size of the canvas. Move it as the camera moves
   move: (x, y) ->
@@ -32,4 +38,3 @@ module.exports = class Grid
 
     @vert.x = x
     @vert.y = y
-

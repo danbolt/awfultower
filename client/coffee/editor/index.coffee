@@ -42,6 +42,9 @@ module.exports = class Editor
 
     @game.stage.backgroundColor = '#2d2d2d'
 
+    @grid = new Grid @
+    Stamp.init @game
+
     @cursors = @game.input.keyboard.createCursorKeys()
 
     @map = @game.add.tilemap()
@@ -58,10 +61,11 @@ module.exports = class Editor
     undoKey.onDown.add (=> @undo.undo()), @
     redoKey.onDown.add (=> @undo.redo()), @
 
-    @grid = new Grid @
-
-    Stamp.init @game
     Minimap.init @
+
+    # @group.add(@map)
+    @game.world.add(@grid.group)
+    @game.world.add(Stamp.preview)
 
   # Add a new phaser.tileMapLayer to our game
   addLayer: (name) =>
@@ -83,6 +87,7 @@ module.exports = class Editor
     layer.visible = visible
 
   changeGlobalOpacity: (opacity) =>
+    name = @currentLayer?.name
     for n, layer of @layers
       if opacity is false
         layer.alpha = 1
@@ -100,13 +105,21 @@ module.exports = class Editor
       layer.alpha = 1 if n is name
       layer.alpha = 0.5 if n isnt name
 
+    @orderChildren()
+
   reorderLayers: (layers) =>
     for layer in layers
       @layers[layer].bringToTop()
 
+    @orderChildren()
+
   toggleErase: (erase) =>
     @erase = erase
     Stamp.setErase @erase
+
+  orderChildren: ->
+    @game.world.bringToTop @grid.group
+    @game.world.bringToTop Stamp.preview
 
   mouseUp: (e) =>
     # If we are band filling, fill the region
