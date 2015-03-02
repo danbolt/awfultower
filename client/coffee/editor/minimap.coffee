@@ -39,11 +39,12 @@ class Minimap
 
   resizeHighlight: =>
     return unless @delegate
-    @highlightSize = (@delegate.game.width / tileWidth) * (tileWidth * @scale.x)
+    x = (@delegate.game.width / tileWidth) * (tileWidth * @scale.x)
+    y = (@delegate.game.height / tileHeight) * (tileHeight * @scale.y)
 
     @highlight.clear()
     @highlight.lineStyle(2, 0xffff00, 1)
-    @highlight.drawRect 0, 0, @highlightSize, @highlightSize
+    @highlight.drawRect 0, 0, x, y
 
   # Mouse was clicked, update position of map
   mouseMove: (e) =>
