@@ -193,27 +193,13 @@ module.exports = class Editor
 
     Stamp.updateHighlight x, y
 
-    if @bandFill
-      canvasX = @currentLayer.getTileX @game.input.activePointer.x
-      canvasY = @currentLayer.getTileY @game.input.activePointer.y
-
-      @panCamera canvasX, canvasY
-
-  # As the cursor gets close to the edge of the map, move the camera
-  panCamera: (x, y) =>
-    if x >= 24 then @game.camera.x += tileWidth
-    else if x is 0 then @game.camera.x -= tileWidth
-
-    if y >= 24 then @game.camera.y += tileHeight
-    else if y is 0 then @game.camera.y -= tileHeight
-
   update: =>
     # Move the camera
-    if @cursors.left.isDown then @game.camera.x -= tileWidth / 2
-    if @cursors.right.isDown then @game.camera.x += tileWidth / 2
+    if @cursors.left.isDown then @game.camera.x -= tileWidth
+    if @cursors.right.isDown then @game.camera.x += tileWidth
 
-    if @cursors.down.isDown then @game.camera.y += tileHeight / 2
-    if @cursors.up.isDown then @game.camera.y -= tileHeight / 2
+    if @cursors.down.isDown then @game.camera.y += tileHeight
+    if @cursors.up.isDown then @game.camera.y -= tileHeight
 
     Minimap.moveHighlight @game.camera.x / tileWidth, @game.camera.y / tileHeight
 
@@ -221,8 +207,8 @@ module.exports = class Editor
 
   # Called from minimap clicks. Move the map to an absolute position
   moveCamera: (x, y) =>
-    @game.camera.x = x * MAP_SIZE.x * tileWidth - 400
-    @game.camera.y = y * MAP_SIZE.y * tileHeight - 400
+    @game.camera.x = x * MAP_SIZE.x * tileWidth - @game.width / 2
+    @game.camera.y = y * MAP_SIZE.y * tileHeight - @game.height / 2
 
   # Fill in or remove a region
   # x and y are the min point of the region (top left)

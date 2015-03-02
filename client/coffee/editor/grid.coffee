@@ -12,16 +12,16 @@ module.exports = class Grid
     @horiz.lineStyle(1,0x3d3d3d, 1)
     @horiz.moveTo 0, 0
 
-    for i in [0..800] by tileWidth
-      @horiz.lineTo 800, i
+    for i in [0..@game.width] by tileWidth
+      @horiz.lineTo @game.height, i
       @horiz.moveTo 0, i + tileWidth
 
     @vert = @game.add.graphics()
     @vert.lineStyle(1,0x3d3d3d, 1)
     @vert.moveTo 0, 0
 
-    for i in [0..800] by tileHeight
-      @vert.lineTo i, 800
+    for i in [0..@game.height] by tileHeight
+      @vert.lineTo i, @game.width
       @vert.moveTo i + tileHeight, 0
 
     @group.add @horiz
