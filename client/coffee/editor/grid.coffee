@@ -7,25 +7,38 @@ module.exports = class Grid
 
     @group = @game.add.group()
 
-    # The horizontal and vertical lines are drawn in a serpentine pattern
     @horiz = @game.add.graphics()
-    @horiz.lineStyle(1,0x3d3d3d, 1)
-    @horiz.moveTo 0, 0
-
-    for i in [0..@game.width] by tileWidth
-      @horiz.lineTo @game.height, i
-      @horiz.moveTo 0, i + tileWidth
-
     @vert = @game.add.graphics()
-    @vert.lineStyle(1,0x3d3d3d, 1)
-    @vert.moveTo 0, 0
-
-    for i in [0..@game.height] by tileHeight
-      @vert.lineTo i, @game.width
-      @vert.moveTo i + tileHeight, 0
 
     @group.add @horiz
     @group.add @vert
+
+    @drawGrid()
+
+
+  resizeGrid: ->
+    @horiz.clear()
+    @vert.clear()
+
+    @drawGrid()
+
+  drawGrid: ->
+
+    # The horizontal and vertical lines are drawn in a serpentine pattern
+    @horiz.lineStyle(1,0x3d3d3d, 1)
+    @horiz.moveTo 0, 0
+
+    for i in [0..@game.height] by tileWidth
+      @horiz.lineTo @game.width, i
+      @horiz.moveTo 0, i + tileWidth
+
+    @vert.lineStyle(1,0x3d3d3d, 1)
+    @vert.moveTo 0, 0
+
+    for i in [0..@game.width] by tileHeight
+      @vert.lineTo i, @game.height
+      @vert.moveTo i + tileHeight, 0
+
 
   toggle: (grid) ->
     @horiz.visible = grid

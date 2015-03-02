@@ -39,6 +39,7 @@ module.exports = class Editor
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
 
   resize: =>
+    @grid.resizeGrid()
     Minimap.resizeHighlight()
 
   create: =>
