@@ -26,7 +26,7 @@ module.exports = class Editor
     flux.store("Store").on 'change', (type, rest...) =>
       fluxMaps[type]?(rest...)
 
-    @game = new Phaser.Game 800, 800, Phaser.AUTO, "scene",
+    @game = new Phaser.Game '100%', '100%', Phaser.AUTO, "scene",
       preload: @preload
       create: @create
       update: @update
@@ -38,9 +38,14 @@ module.exports = class Editor
   preload: =>
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
 
+  resize: =>
+    Minimap.resizeHighlight()
+
   create: =>
 
     @game.stage.backgroundColor = '#2d2d2d'
+    @game.state.resize = @resize
+    @game.scale.scaleMode = Phaser.ScaleManager.RESIZE
 
     @grid = new Grid @
     Stamp.init @game

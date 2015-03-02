@@ -9,6 +9,11 @@ body
   background-color: #585858
   font-family: 'Open Sans', sans-serif
   color: $white
+  position: absolute
+  top: 0
+  right: 0
+  bottom: 0
+  left: 0
 
 canvas
   display: inine-block
@@ -31,7 +36,12 @@ canvas
   margin-left: $nav-width
   display: inline-block
   vertical-align: top
+  width: 256px
 
+#content
+  height: 100%
+  width: 100%
+  position: relative
 
 @import 'nav'
 @import 'panel'

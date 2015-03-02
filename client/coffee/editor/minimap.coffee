@@ -15,14 +15,17 @@ class Minimap
 
     @tiles = {}
 
-  init: (@delegate) =>
+    @scale =
+      x: (WIDTH / MAP_SIZE.x) / tileWidth
+      y: (HEIGHT / MAP_SIZE.y) / tileHeight
 
+
+  init: (@delegate) =>
     # Scale the highlight area to represent size of the viewport
-    @highlightSize = (@delegate.game.width / tileWidth) * (tileWidth * @scale.x)
 
     @highlight = @game.add.graphics()
-    @highlight.lineStyle(2, 0xffff00, 1)
-    @highlight.drawRect(0, 0, @highlightSize, @highlightSize)
+
+    @resizeHighlight()
 
   preload: =>
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
@@ -33,9 +36,14 @@ class Minimap
 
     @minimap = @game.add.group()
     # Scale is how much we need to scale each tile from the map -> minimap
-    @scale =
-      x: (WIDTH / MAP_SIZE.x) / tileWidth
-      y: (HEIGHT / MAP_SIZE.y) / tileHeight
+
+  resizeHighlight: =>
+    return unless @delegate
+    @highlightSize = (@delegate.game.width / tileWidth) * (tileWidth * @scale.x)
+
+    @highlight.clear()
+    @highlight.lineStyle(2, 0xffff00, 1)
+    @highlight.drawRect 0, 0, @highlightSize, @highlightSize
 
   # Mouse was clicked, update position of map
   mouseMove: (e) =>
