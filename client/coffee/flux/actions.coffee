@@ -28,3 +28,8 @@ module.exports =
 
   toggleGrid: (grid) ->
     @dispatch _c.TOGGLE_GRID, grid
+
+  addQuickSelect: (pos, index) ->
+    @dispatch _c.ADD_QUICK_SELECT,
+      pos: pos
+      index: index

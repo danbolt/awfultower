@@ -19,6 +19,12 @@ module.exports = React.createClass
     flux = @getFlux()
     flux.store("Store").getState()
 
+  componentDidMount: ->
+    $(window).keydown (e) =>
+      @quickSelect = key - 48 if 48 <= (key = e.keyCode) <= 57
+    $(window).keyup =>
+      @quickSelect = null
+
   position: (e) ->
     parent = @refs.panel.getDOMNode()
     headerHeight = $(@refs.panel.getDOMNode()).children('h2').outerHeight()
@@ -62,6 +68,7 @@ module.exports = React.createClass
 
     @changeHighlight e
     @getFlux().actions.toggleErase false
+    @getFlux().actions.addQuickSelect(@quickSelect, y*w + x) if @quickSelect?
 
   changeHighlight: (e) ->
 

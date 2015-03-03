@@ -7,6 +7,7 @@ module.exports = Fluxxor.createStore
     @grid = true
     @layers = {}
     @currentLayer = null
+    @quickSelectIndicies = (null for i in [0..9])
 
     @bindActions(
       _c.TOGGLE_ERASE, @toggleErase
@@ -17,7 +18,13 @@ module.exports = Fluxxor.createStore
       _c.REORDER_LAYERS, @reorderLayers
       _c.TOGGLE_GLOBAL_OPACITY, @toggleGlobalOpacity
       _c.TOGGLE_GRID, @toggleGrid
+      _c.ADD_QUICK_SELECT, @addQuickSelect
     )
+
+  addQuickSelect: ({pos, index}) ->
+    return unless 0 <= pos <= 9
+    @quickSelectIndicies[pos] = index
+    @emit 'change'
 
   toggleGrid: (grid, type) ->
     g = if grid? then grid else not @grid
@@ -71,3 +78,4 @@ module.exports = Fluxxor.createStore
     layers: @layers
     grid: @grid
     currentLayer: @currentLayer
+    quickSelectIndicies: @quickSelectIndicies

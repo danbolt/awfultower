@@ -15,6 +15,20 @@ body
   bottom: 0
   left: 0
 
+#quick-select
+  position: absolute
+  left: $nav_width * 2
+  top: $nav-width
+  background-color: #2d2d2d
+  border: solid 4px #4d4d4d
+  box-sizing: content-box
+
+  div
+    display: inline-block
+    box-sizing: content-box
+    &:nth-child(n+2)
+      border-left: solid 4px #4d4d4d
+
 canvas
   display: inine-block
   cursor: pointer
@@ -23,7 +37,7 @@ canvas
 #scene
   display: inline-block
   margin-left: $nav_width * 2
-  margin-top: 32px
+  margin-top: 32px * 3
 
   canvas
     cursor: none

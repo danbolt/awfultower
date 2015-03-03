@@ -3,8 +3,6 @@ Stamp = require './lib/stamp'
 Undo = require './undo'
 Grid = require './grid'
 
-_c = require '../flux/constants'
-
 {tileWidth, tileHeight, sign} = require './utils'
 
 MAP_SIZE = {x: 100, y: 100}
@@ -54,7 +52,7 @@ module.exports = class Editor
     @cursors = @game.input.keyboard.createCursorKeys()
 
     @map = @game.add.tilemap()
-    @map.addTilesetImage('level')
+    @map.addTilesetImage 'level'
 
     @addLayer("layer 1")
 
