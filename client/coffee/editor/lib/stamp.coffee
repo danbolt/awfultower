@@ -1,3 +1,7 @@
+# The stamp shows a preview of what tiles are selected, or where the user
+# is dragging / filling. It also holds the bounds which are used for actually
+# adding the changes to the map
+
 {tileWidth, tileHeight} = require '../utils'
 
 class Stamp

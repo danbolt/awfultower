@@ -5,23 +5,25 @@ Grid = require './grid'
 
 {tileWidth, tileHeight, sign} = require './utils'
 
-MAP_SIZE = {x: 100, y: 100}
+MAP_SIZE = {x: 100, y: 100} # TODO this needs to be configurable
 
 module.exports = class Editor
   constructor: ->
 
+    # Use css to size the game, hence the 100%
     @game = new Phaser.Game '100%', '100%', Phaser.AUTO, "scene",
       preload: @preload
       create: @create
       update: @update
       render: ->
 
+    @globalOpacity = true
     @layers = {}
     @undo = new Undo @
     @bindFlux()
 
+  # When a flux action is called call the appropriate method here
   bindFlux: =>
-    # When a flux action is called call the appropriate method here
     fluxMaps =
       ADD_LAYER: @addLayer
       CHANGE_LAYER: @changeLayer
@@ -38,25 +40,30 @@ module.exports = class Editor
   preload: =>
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
 
+  # The game scaleMode is RESIZE, so when the canvas is resized, our game
+  # will resize, and call this method
   resize: =>
     @grid.resizeGrid()
     Minimap.resizeHighlight()
 
   create: =>
-
     @game.stage.backgroundColor = '#2d2d2d'
     @game.state.resize = @resize
+    # Resize the world when canvas resizes
     @game.scale.scaleMode = Phaser.ScaleManager.RESIZE
 
     @grid = new Grid @
     Stamp.init @game
+    Minimap.init @
 
-    @cursors = @game.input.keyboard.createCursorKeys()
+    @game.world.add(@grid.group)
+    @game.world.add(Stamp.preview)
 
     @map = @game.add.tilemap()
     @map.addTilesetImage 'level'
-
     @addLayer("layer 1")
+
+    @cursors = @game.input.keyboard.createCursorKeys()
 
     @game.input.onUp.add @mouseUp, @
     @game.input.addMoveCallback @mouseMove, @
@@ -67,52 +74,63 @@ module.exports = class Editor
     undoKey.onDown.add (=> @undo.undo()), @
     redoKey.onDown.add (=> @undo.redo()), @
 
-    Minimap.init @
-
-    # @group.add(@map)
-    @game.world.add(@grid.group)
-    @game.world.add(Stamp.preview)
-
   # Add a new phaser.tileMapLayer to our game
   addLayer: (name) =>
+
     if Object.keys(@layers).length
+      # If we already have a layer, add a blank layer
       @layers[name] = @map.createBlankLayer name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
     else
+      # Create the initial layer
       @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
-    @layers[name].resizeWorld()
-    @layers[name].visible = true
-    @layers[name].locked = false
-    @changeLayer name
 
+    # Make it the active layer
+    @changeLayer name
+    @layers[name].resizeWorld()
+
+  # A locked layer cannot be modified
   lockLayer: (layer, locked) =>
     return unless (layer = @layers[layer])
     layer.locked = locked
 
+  # Hide or show a layer
   hideLayer: (layer, visible) =>
     return unless (layer = @layers[layer])
     layer.visible = visible
 
-  changeGlobalOpacity: (opacity) =>
+  # If there is global opacity, layers which are not active have opacity = 0.5
+  # so you can see all the other layers. Otherwise all layers have opacity 1,
+  # and are displayed based on z-index
+  updateGlobalOpacity: ->
     name = @currentLayer?.name
     for n, layer of @layers
-      if opacity is false
+      if @globalOpacity is false
         layer.alpha = 1
       else
-        layer.alpha = 1 if n is name
-        layer.alpha = 0.5 if n isnt name
+        layer.alpha = 1 if n is name # current layer should have opacity 1
+        layer.alpha = 0.5 if n isnt name # all others should have 0.5
 
-  toggleGrid: (grid) =>
-    @grid.toggle grid
+  changeGlobalOpacity: (opacity) =>
+    name = @currentLayer?.name
+    @globalOpacity = opacity
+    @updateGlobalOpacity()
 
+  # Change the current layer, adjusting the opacity of the others if there is
+  # global opacity
   changeLayer: (name) =>
     return if name is @currentLayer?.name
     @currentLayer = @layers[name]
-    for n, layer of @layers
-      layer.alpha = 1 if n is name
-      layer.alpha = 0.5 if n isnt name
+    @updateGlobalOpacity()
 
     @orderChildren()
 
+  # Show or hide the canvas grid
+  # params:
+  #   grid: boolean - visible or not visible
+  toggleGrid: (grid) =>
+    @grid.toggle grid
+
+  # Change layer z-index
   reorderLayers: (layers) =>
     for layer in layers
       @layers[layer].bringToTop()
@@ -123,6 +141,8 @@ module.exports = class Editor
     @erase = erase
     Stamp.setErase @erase
 
+  # The stamp should always appear above the grid, which should always be
+  # above the map. When we reorder we need to make sure this is true
   orderChildren: ->
     @game.world.bringToTop @grid.group
     @game.world.bringToTop Stamp.preview
@@ -138,20 +158,22 @@ module.exports = class Editor
       w = bounds.maxX - bounds.minX
       h = bounds.maxY - bounds.minY
 
+      # Fill the reguin that was band selected
       @fill bounds.minX, bounds.minY, w, h, @currentLayer
 
     # Add an undo item. Either add or remove, and pass the modified tiles
-    undoAction = if @erase then '-' else '+'
-
     if @modifiedTiles and Object.keys(@modifiedTiles).length
+      undoAction = if @erase then '-' else '+'
       @undo.push undoAction, @modifiedTiles
 
     @modifiedTiles = null
 
   mouseMove: (e) =>
+    # Get tile coords of mouse
     x = @currentLayer.getTileX(@game.input.activePointer.worldX)
     y = @currentLayer.getTileY(@game.input.activePointer.worldY)
 
+    # What modifiers are down
     shift = @game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)
     space = @game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)
     pointer = @game.input.mousePointer.isDown

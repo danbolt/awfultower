@@ -7,6 +7,7 @@ module.exports =
   tileWidth: tileWidth
   tileHeight: tileHeight
 
+  # Is a number negative or positive
   sign: (n) ->
     if n is 0 then 0
     else if n > 0 then 1

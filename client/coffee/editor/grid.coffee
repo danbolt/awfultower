@@ -1,3 +1,4 @@
+# The grid that will be displayed in the canvas
 
 {tileWidth, tileHeight} = require './utils'
 
@@ -7,6 +8,7 @@ module.exports = class Grid
 
     @group = @game.add.group()
 
+    # Horizontal and vertical line groups
     @horiz = @game.add.graphics()
     @vert = @game.add.graphics()
 
@@ -15,7 +17,7 @@ module.exports = class Grid
 
     @drawGrid()
 
-
+  # When the world resizes (window resize?) obliterate the grid and redraw it
   resizeGrid: ->
     @horiz.clear()
     @vert.clear()
@@ -45,6 +47,7 @@ module.exports = class Grid
     @vert.visible = grid
 
   # The grid is small. Only the size of the canvas. Move it as the camera moves
+  # making it appear that the grid fills the whole canvas
   move: (x, y) ->
     @horiz.x = x
     @horiz.y = y
