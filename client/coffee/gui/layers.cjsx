@@ -2,11 +2,11 @@ Layer = require './layer'
 
 module.exports = React.createClass
   displayName: "Layers Panel"
-  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
+  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("LayerStore")]
 
   getStateFromFlux: ->
     flux = @getFlux()
-    flux.store("Store").getState()
+    flux.store("LayerStore").getState()
 
   layerSelected: (layer) ->
     @setState(currentLayer: layer) if layer in @state.layers

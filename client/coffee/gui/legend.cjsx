@@ -3,7 +3,7 @@ Stamp = require '../editor/lib/stamp'
 
 module.exports = React.createClass
   displayName: "Legend"
-  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
+  mixins: [Fluxxor.FluxMixin(React)]
 
   isMouseDown: false
   initialMousePosition: {}
@@ -14,10 +14,6 @@ module.exports = React.createClass
       top: 0
       width: tileWidth
       height: tileHeight
-
-  getStateFromFlux: ->
-    flux = @getFlux()
-    flux.store("Store").getState()
 
   componentDidMount: ->
     $(window).keydown (e) =>

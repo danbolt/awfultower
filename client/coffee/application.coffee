@@ -1,10 +1,15 @@
 Editor = require './editor'
 Main = require './gui/main'
 
-Store = require './flux/stores'
+Stores = require './flux/stores'
 Actions = require './flux/actions'
 
-flux = new Fluxxor.Flux {Store: new Store()}, Actions
+stores =
+  LayerStore: new Stores.Layers()
+  QuickSelectStore: new Stores.QuickSelect()
+  StateStore: new Stores.State()
+
+flux = new Fluxxor.Flux stores, Actions
 window.flux = flux
 
 flux.on "dispatch", (type, payload) ->

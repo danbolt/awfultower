@@ -1,9 +1,9 @@
 module.exports = React.createClass
   displayName: "Layer"
-  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
+  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("LayerStore")]
 
   getStateFromFlux: ->
-    @getFlux().store("Store").getState()
+    @getFlux().store("LayerStore").getState()
 
   changeLayer: (e) ->
     @getFlux().actions.changeLayer @props.layer.name

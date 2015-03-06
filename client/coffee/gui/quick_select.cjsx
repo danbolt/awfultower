@@ -5,10 +5,10 @@ Stamp = require '../editor/lib/stamp'
 module.exports = React.createClass
   displayName: "QuickSelect"
 
-  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
+  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("StateStore")]
 
   getStateFromFlux: ->
-    @getFlux().store("Store").getState()
+    @getFlux().store("StateStore").getState()
 
   getInitialState: -> {}
 

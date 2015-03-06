@@ -1,11 +1,11 @@
 
 module.exports = React.createClass
   displayName: "Nav"
-  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("Store")]
+  mixins: [Fluxxor.FluxMixin(React), Fluxxor.StoreWatchMixin("StateStore")]
 
   getStateFromFlux: ->
     flux = @getFlux()
-    flux.store("Store").getState()
+    flux.store("StateStore").getState()
 
   toggleErase: ->
     @getFlux().actions.toggleErase()

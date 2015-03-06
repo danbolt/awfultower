@@ -10,6 +10,17 @@ MAP_SIZE = {x: 100, y: 100}
 module.exports = class Editor
   constructor: ->
 
+    @game = new Phaser.Game '100%', '100%', Phaser.AUTO, "scene",
+      preload: @preload
+      create: @create
+      update: @update
+      render: ->
+
+    @layers = {}
+    @undo = new Undo @
+    @bindFlux()
+
+  bindFlux: =>
     # When a flux action is called call the appropriate method here
     fluxMaps =
       ADD_LAYER: @addLayer
@@ -21,17 +32,8 @@ module.exports = class Editor
       TOGGLE_GLOBAL_OPACITY: @changeGlobalOpacity
       TOGGLE_GRID: @toggleGrid
 
-    flux.store("Store").on 'change', (type, rest...) =>
-      fluxMaps[type]?(rest...)
-
-    @game = new Phaser.Game '100%', '100%', Phaser.AUTO, "scene",
-      preload: @preload
-      create: @create
-      update: @update
-      render: ->
-
-    @layers = {}
-    @undo = new Undo @
+    for name, store of flux.stores
+      store.on('change', (type, rest...) => fluxMaps[type]?(rest...))
 
   preload: =>
     @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
