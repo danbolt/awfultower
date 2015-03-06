@@ -29,6 +29,7 @@ module.exports = React.createClass
       {
         for index, i in @state.quickSelectIndicies
           st = _.clone style
+          # Figure out the tile index based on x, y coords
           x = (index % 8) * tileWidth
           y = Math.floor(index / 8) * tileHeight
           st['background-position'] = "-#{x}px -#{y}px" if index?

@@ -23,7 +23,7 @@ module.exports = class Editor
     @bindFlux()
 
   # When a flux action is called call the appropriate method here
-  bindFlux: =>
+  bindFlux: ->
     fluxMaps =
       ADD_LAYER: @addLayer
       CHANGE_LAYER: @changeLayer
@@ -38,17 +38,12 @@ module.exports = class Editor
       store.on('change', (type, rest...) => fluxMaps[type]?(rest...))
 
   preload: =>
-    @game.load.spritesheet('level', 'images/level3.png', tileWidth, tileHeight)
-
-  # The game scaleMode is RESIZE, so when the canvas is resized, our game
-  # will resize, and call this method
-  resize: =>
-    @grid.resizeGrid()
-    Minimap.resizeHighlight()
+    @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
 
   create: =>
     @game.stage.backgroundColor = '#2d2d2d'
     @game.state.resize = @resize
+
     # Resize the world when canvas resizes
     @game.scale.scaleMode = Phaser.ScaleManager.RESIZE
 
@@ -56,12 +51,12 @@ module.exports = class Editor
     Stamp.init @game
     Minimap.init @
 
-    @game.world.add(@grid.group)
-    @game.world.add(Stamp.preview)
+    @game.world.add @grid.group
+    @game.world.add Stamp.preview
 
     @map = @game.add.tilemap()
     @map.addTilesetImage 'level'
-    @addLayer("layer 1")
+    @addLayer 'layer 1'
 
     @cursors = @game.input.keyboard.createCursorKeys()
 
@@ -69,10 +64,15 @@ module.exports = class Editor
     @game.input.addMoveCallback @mouseMove, @
 
     # Register undo and redo
-    undoKey = @game.input.keyboard.addKey(Phaser.Keyboard.U)
-    redoKey = @game.input.keyboard.addKey(Phaser.Keyboard.Y)
-    undoKey.onDown.add (=> @undo.undo()), @
-    redoKey.onDown.add (=> @undo.redo()), @
+    undoKey = @game.input.keyboard.addKey Phaser.Keyboard.U
+    redoKey = @game.input.keyboard.addKey Phaser.Keyboard.Y
+    undoKey.onDown.add ( => @undo.undo() ), @
+    redoKey.onDown.add ( => @undo.redo() ), @
+
+  # When the world resizes, this gets called
+  resize: =>
+    @grid.resizeGrid()
+    Minimap.resizeHighlight()
 
   # Add a new phaser.tileMapLayer to our game
   addLayer: (name) =>
@@ -84,16 +84,14 @@ module.exports = class Editor
       # Create the initial layer
       @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
 
-    # Make it the active layer
     @changeLayer name
     @layers[name].resizeWorld()
 
-  # A locked layer cannot be modified
   lockLayer: (layer, locked) =>
+    # A locked layer cannot be modified
     return unless (layer = @layers[layer])
     layer.locked = locked
 
-  # Hide or show a layer
   hideLayer: (layer, visible) =>
     return unless (layer = @layers[layer])
     layer.visible = visible
@@ -101,17 +99,16 @@ module.exports = class Editor
   # If there is global opacity, layers which are not active have opacity = 0.5
   # so you can see all the other layers. Otherwise all layers have opacity 1,
   # and are displayed based on z-index
-  updateGlobalOpacity: ->
+  updateGlobalOpacity: =>
     name = @currentLayer?.name
     for n, layer of @layers
       if @globalOpacity is false
         layer.alpha = 1
       else
-        layer.alpha = 1 if n is name # current layer should have opacity 1
-        layer.alpha = 0.5 if n isnt name # all others should have 0.5
+        layer.alpha = 1 if n is name
+        layer.alpha = 0.5 if n isnt name
 
   changeGlobalOpacity: (opacity) =>
-    name = @currentLayer?.name
     @globalOpacity = opacity
     @updateGlobalOpacity()
 
@@ -130,7 +127,6 @@ module.exports = class Editor
   toggleGrid: (grid) =>
     @grid.toggle grid
 
-  # Change layer z-index
   reorderLayers: (layers) =>
     for layer in layers
       @layers[layer].bringToTop()
@@ -170,17 +166,18 @@ module.exports = class Editor
 
   mouseMove: (e) =>
     # Get tile coords of mouse
-    x = @currentLayer.getTileX(@game.input.activePointer.worldX)
-    y = @currentLayer.getTileY(@game.input.activePointer.worldY)
+    x = @currentLayer.getTileX @game.input.activePointer.worldX
+    y = @currentLayer.getTileY @game.input.activePointer.worldY
 
     # What modifiers are down
-    shift = @game.input.keyboard.isDown(Phaser.Keyboard.SHIFT)
-    space = @game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)
+    shift = @game.input.keyboard.isDown Phaser.Keyboard.SHIFT
+    space = @game.input.keyboard.isDown Phaser.Keyboard.SPACEBAR
     pointer = @game.input.mousePointer.isDown
 
     # checks if mouse is being held
     if pointer and not @modifiedTiles
       @modifiedTiles = {}
+
     # We are holding space, pan the map
     if pointer and space
       # The center position of the current drag. Gets updated each time
@@ -200,14 +197,17 @@ module.exports = class Editor
     # Remove the mousedrag object
     else if @mouseDrag and not (space and pointer)
       @mouseDrag = null
+
     # We want to start bandfilling
     else if shift and pointer and not @bandFill
       Stamp.beginBandFill x, y
       @bandFill = true
+
     # We want to cancel bandfilling, but not actually fill
     else if not shift and @bandFill
       @bandFill = false
       Stamp.endBandFill()
+
     # Otherwise just paint, picasso!
     else if pointer and not @currentLayer.locked and not @bandFill
       # ...Or erase
@@ -215,8 +215,8 @@ module.exports = class Editor
         @removeTile x, y, @currentLayer
       else
         # Add all tiles in a multi tile select
-        for i in [0..Stamp.tiles.length-1]
-          for j in [0..Stamp.tiles[i].length-1]
+        for i in [0..Stamp.tiles.length - 1]
+          for j in [0..Stamp.tiles[i].length - 1]
             @addTile Stamp.tiles[i][j], x + i, y + j, @currentLayer
 
     Stamp.updateHighlight x, y
@@ -247,13 +247,14 @@ module.exports = class Editor
     if @erase
       for i in [0..w]
         for j in [0..h]
-          @removeTile x+i, y+j, layer
+          @removeTile x + i, y + j, layer
     else
       # Paint a single tile
       if Stamp.tiles[0].length is 1
         for i in [0..w]
           for j in [0..h]
-            @addTile Stamp.tiles[0][0], x+i, y+j, layer
+            tile = Stamp.tiles[0][0]
+            @addTile tile, x + i, y + j, layer
 
       # Repeat paint a multiselect tile
       else
@@ -261,12 +262,13 @@ module.exports = class Editor
         stampH = Stamp.tiles[0].length
         for i in [0..w]
           for j in [0..h]
-            @addTile Stamp.tiles[i%stampW][j%stampH], x + i, y + j, @currentLayer
+            tile = Stamp.tiles[i % stampW][j % stampH]
+            @addTile tile, x + i, y + j, @currentLayer
 
   # Add a tile to the map, add an undo action, basically just if this method
   # isn't being called as the result of an undo action, and add the tile to the
   # minimap
-  addTile: (index, x, y, layer, addToUndo = true) =>
+  addTile: (index, x, y, layer, addToUndo = true) ->
     return if @map.getTile(x, y, layer)?.index is index
     if addToUndo
       @modifiedTiles[x] ||= {}
@@ -281,7 +283,7 @@ module.exports = class Editor
   # Remove a tile to the map, add an undo action, basically just if this method
   # isn't being called as the result of an undo action, and remove the tile
   # from the minimap
-  removeTile: (x, y, layer, addToUndo = true) =>
+  removeTile: (x, y, layer, addToUndo = true) ->
     return unless (tile = @map.getTile(x, y, layer))
     if addToUndo
       @modifiedTiles[x] ||= {}

@@ -17,7 +17,7 @@ module.exports = class Grid
 
     @drawGrid()
 
-  # When the world resizes (window resize?) obliterate the grid and redraw it
+  # When the world resizes (window resize) obliterate the grid and redraw it
   resizeGrid: ->
     @horiz.clear()
     @vert.clear()
@@ -27,14 +27,14 @@ module.exports = class Grid
   drawGrid: ->
 
     # The horizontal and vertical lines are drawn in a serpentine pattern
-    @horiz.lineStyle(1,0x3d3d3d, 1)
+    @horiz.lineStyle 1, 0x3d3d3d, 1
     @horiz.moveTo 0, 0
 
     for i in [0..@game.height] by tileWidth
       @horiz.lineTo @game.width, i
       @horiz.moveTo 0, i + tileWidth
 
-    @vert.lineStyle(1,0x3d3d3d, 1)
+    @vert.lineStyle 1, 0x3d3d3d, 1
     @vert.moveTo 0, 0
 
     for i in [0..@game.width] by tileHeight

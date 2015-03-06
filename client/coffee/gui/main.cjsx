@@ -13,12 +13,12 @@ module.exports = React.createClass
 
   # When we resize the window, calculate how big the canvas should be
   resizeScene: ->
-    scene = $(@refs.scene.getDOMNode())
-    nav = $(@refs.nav.getDOMNode())
-    panels = $(@refs.panels.getDOMNode())
-    quickSelect = $(@refs.quickSelect.getDOMNode())
+    scene = $ @refs.scene.getDOMNode()
+    nav = $ @refs.nav.getDOMNode()
+    panels = $ @refs.panels.getDOMNode()
+    quickSelect = $ @refs.quickSelect.getDOMNode()
 
-    body = $("body")
+    body = $ "body"
 
     w = body.width() - (nav.width() + panels.width() + 32*3)
     h = body.height() - (quickSelect.height() + 32*3)
@@ -32,7 +32,6 @@ module.exports = React.createClass
     @resizeScene()
 
   render: ->
-
     sceneStyles =
       width: @state.sceneWidth
       height: @state.sceneHeight

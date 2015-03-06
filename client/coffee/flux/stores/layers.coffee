@@ -47,7 +47,7 @@ module.exports = Fluxxor.createStore
 
   reorderLayers: (layers, type) ->
     _.each @layers, (layer) ->
-      layer.order = layers.indexOf(layer.name)
+      layer.order = layers.indexOf layer.name
 
     @emit 'change', type, layers
 

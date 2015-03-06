@@ -25,7 +25,7 @@ module.exports = React.createClass
     @sortable()
 
   sortable: ->
-    $list = $(@refs.list.getDOMNode())
+    $list = $ @refs.list.getDOMNode()
     height = $list.first().height()
 
     $list.sortable
@@ -40,11 +40,11 @@ module.exports = React.createClass
     $list.disableSelection()
 
   sorted: (e, ui) ->
-    layers = $(@refs.list.getDOMNode()).children("li")
+    layers = $(@refs.list.getDOMNode()).children "li"
     layers = layers.map (index, layer) =>
       $(layer).data "name"
 
-    layers = $.makeArray(layers)
+    layers = $.makeArray layers
     @getFlux().actions.reorderLayers layers
 
   render: ->

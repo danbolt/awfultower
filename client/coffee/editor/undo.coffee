@@ -7,7 +7,7 @@ module.exports = class Undo
     @_redo = []
 
   # Add an item to the undo stack. When you do this, clear the redo stack
-  push: (action, tiles) =>
+  push: (action, tiles) ->
     @_redo = []
     _tiles = []
     for x, ys of tiles
@@ -20,16 +20,16 @@ module.exports = class Undo
   undo: ->
     return unless (item = @_undo.pop())
     @performAction item
-    @_redo.push @swap(item)
+    @_redo.push @swap item
 
   # Redo an event, push that event onto the undo stack
   redo: ->
     return unless (item = @_redo.pop())
     @performAction item
-    @_undo.push @swap(item)
+    @_undo.push @swap item
 
   # Perform the undo/redo action. Just do the opposite of the initial event
-  performAction: (item) =>
+  performAction: (item) ->
     action = item.action
     for t in item.tiles
       if action is '-'

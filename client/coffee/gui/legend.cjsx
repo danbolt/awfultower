@@ -51,7 +51,7 @@ module.exports = React.createClass
     maxY = if y >= initial.y then y else initial.y
 
     if x is initial.x and y is initial.y
-      Stamp.setSingle y*w + x
+      Stamp.setSingle y * w + x
     else
       tiles = []
       for i in [minX..maxX]
@@ -64,10 +64,9 @@ module.exports = React.createClass
 
     @changeHighlight e
     @getFlux().actions.toggleErase false
-    @getFlux().actions.addQuickSelect(@quickSelect, y*w + x) if @quickSelect?
+    @getFlux().actions.addQuickSelect(@quickSelect, y * w + x) if @quickSelect?
 
   changeHighlight: (e) ->
-
     {x,y} = @position e
     initial = @initialMousePosition
 

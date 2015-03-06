@@ -9,14 +9,13 @@ class Stamp
     @tiles = [[0]]
 
   init: (@game) =>
-    # Show on the map what it is going to be placed
-    @preview = @game.add.group()
-
     # Set this to be the bounds of the highlight for calculations
     @bandBounds = {}
 
-    # Just a red border if we are erasing
     @erase = false
+
+    # Show on the map what it is going to be placed
+    @preview = @game.add.group()
 
     # The border around the preview
     @highlight = @game.add.graphics()
@@ -24,20 +23,18 @@ class Stamp
     @setMultiple @tiles
 
   # Helper method to add a single tile (index) to the stamp
-  setSingle: (index) =>
+  setSingle: (index) ->
     @setMultiple [[ index ]]
 
   # indicies should be a 2d array of x, y tile indicies
-  setMultiple: (indicies) =>
+  setMultiple: (indicies) ->
     @tiles = indicies
     @updatePreview()
 
-  # We are starting a bandfill
-  beginBandFill: (x, y) =>
+  beginBandFill: (x, y) ->
     @initialBandFillPos = {x: x, y: y}
 
-  # Band fill is finished
-  endBandFill: =>
+  endBandFill: ->
     @initialBandFillPos = null
     @bandBounds = {}
     @updatePreview()
@@ -56,17 +53,17 @@ class Stamp
       # A bit of a hack...just remove all the tiles all the time
       @preview.removeAll()
 
-      # Add all the tiles in the tiles array
-      for i in [0..x-1]
-        for j in [0..y-1]
-          sprite = @game.add.sprite i*tileWidth, j*tileWidth, 'level', @tiles[i][j]
+      for i in [0..x - 1]
+        for j in [0..y - 1]
+          tile = @tiles[i][j]
+          sprite = @game.add.sprite i * tileWidth, j * tileWidth, 'level', tile
           sprite.alpha = 0.5
           @preview.add sprite
 
       @changeHighlight x, y
 
   # Called when the mouse is moved to change position of preview
-  updateHighlight: (x, y) =>
+  updateHighlight: (x, y) ->
     # If this is set, we are in the middle of a fill
     if @initialBandFillPos
       minX = Math.min(@initialBandFillPos.x, x) # top left
@@ -80,33 +77,34 @@ class Stamp
       w = @tiles.length
       h = @tiles[0].length
 
-      @bandBounds = {minX: minX, maxX: maxX, minY: minY, maxY: maxY}
+      @bandBounds = { minX: minX, maxX: maxX, minY: minY, maxY: maxY }
 
       # If we aren't erasing, fill in the preview. Repeat if have multi selected
       if not @erase
         @preview.removeAll()
-        for i in [0..(maxX-minX)]
-          for j in [0..(maxY-minY)]
-            sprite = @game.add.sprite i*tileWidth, j*tileWidth, 'level', @tiles[i%w][j%h]
+        for i in [0..maxX - minX]
+          for j in [0..maxY - minY]
+            tile = @tiles[i % w][j % h]
+            sprite = @game.add.sprite i * tileWidth, j * tileWidth, 'level', tile
             @preview.add sprite
 
       @changeHighlight (maxX - minX) + 1, (maxY - minY) + 1
 
     # Translate to world pos
-    @preview.x = x*tileWidth
-    @preview.y = y*tileHeight
+    @preview.x = x * tileWidth
+    @preview.y = y * tileHeight
 
-  setErase: (erase) =>
+  setErase: (erase) ->
     @erase = erase
     @updatePreview()
 
   # Change highlight color depending on which mode we are in
-  changeHighlight: (w=1, h=1) =>
+  changeHighlight: (w = 1, h = 1) ->
     color = if @erase then 0xff0000 else 0xffff00
 
     @highlight.clear()
-    @highlight.lineStyle(1, color, 1)
-    @highlight.drawRect 0, 0, w*tileWidth, h*tileHeight
+    @highlight.lineStyle 1, color, 1
+    @highlight.drawRect 0, 0, w * tileWidth, h * tileHeight
     @preview.add @highlight
 
 module.exports = new Stamp()
