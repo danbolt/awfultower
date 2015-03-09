@@ -2,6 +2,7 @@ Minimap = require './minimap'
 Stamp = require './lib/stamp'
 Undo = require './undo'
 Grid = require './grid'
+ServerAgent = require './server_agent'
 
 {tileWidth, tileHeight, sign} = require './utils'
 
@@ -21,6 +22,7 @@ module.exports = class Editor
     @layers = {}
     @undo = new Undo @
     @bindFlux()
+    @bindSocket()
 
   # When a flux action is called call the appropriate method here
   bindFlux: ->
@@ -37,10 +39,21 @@ module.exports = class Editor
     for name, store of flux.stores
       store.on('change', (type, rest...) => fluxMaps[type]?(rest...))
 
+  bindSocket: =>
+    ServerAgent.bind 'get_new_map', (data) -> 
+      ServerAgent.send 'new_map', {x: MAP_SIZE.x, y: MAP_SIZE.y}
+
+    ServerAgent.bind 'add_tile', (data) =>
+      @addTile data.index, data.x, data.y, @currentLayer, false, true
+
+    ServerAgent.bind 'load_map', (data) =>
+      @loadMap data
+
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
 
   create: =>
+    @initial_load = true
     @game.stage.backgroundColor = '#2d2d2d'
     @game.state.resize = @resize
 
@@ -68,6 +81,28 @@ module.exports = class Editor
     redoKey = @game.input.keyboard.addKey Phaser.Keyboard.Y
     undoKey.onDown.add ( => @undo.undo() ), @
     redoKey.onDown.add ( => @undo.redo() ), @
+
+    # load default lobby map
+    # this is purely for testing, as it would actually be user triggered
+    ServerAgent.send 'load_map', {filename:'nerds'}
+
+    #this function lets us call 'window.changeMap(MAP_NAME)' from Chrome console
+    window.changeMap = (filename) =>
+      @getMap filename
+
+  getMap: (filename) =>
+    ServerAgent.send 'load_map', {filename:filename}
+
+  loadMap: (data) =>
+    for j in [0...MAP_SIZE.y]
+      for i in [0...MAP_SIZE.x]
+        if data['map'][(j*MAP_SIZE.x) + i] isnt ''
+          @addTile data['map'][(j*MAP_SIZE.x) + i], i, j, 0, false, true
+        else if not @initial_load
+          # this could be optimized when we figure out how to wipe tilemap clean
+          @addTile '-1', i, j, 0, false, true
+    if @initial_load
+      @initial_load = false
 
   # When the world resizes, this gets called
   resize: =>
@@ -268,7 +303,7 @@ module.exports = class Editor
   # Add a tile to the map, add an undo action, basically just if this method
   # isn't being called as the result of an undo action, and add the tile to the
   # minimap
-  addTile: (index, x, y, layer, addToUndo = true) ->
+  addTile: (index, x, y, layer, addToUndo = true, fromServer = false) ->
     return if @map.getTile(x, y, layer)?.index is index
     if addToUndo
       @modifiedTiles[x] ||= {}
@@ -277,19 +312,26 @@ module.exports = class Editor
         previous: @map.getTile(x, y, layer)?.index
         layer: layer
 
+    if not fromServer
+      ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: index, map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
+
     @map.putTile index, x, y, layer
-    Minimap.addTile index, x, y
+    # TODO: Look into 'cannot set frameName' error when loading new map in
+    # Minimap.addTile index, x, y
 
   # Remove a tile to the map, add an undo action, basically just if this method
   # isn't being called as the result of an undo action, and remove the tile
   # from the minimap
-  removeTile: (x, y, layer, addToUndo = true) ->
+  removeTile: (x, y, layer, addToUndo = true, fromServer = false) ->
     return unless (tile = @map.getTile(x, y, layer))
     if addToUndo
       @modifiedTiles[x] ||= {}
       @modifiedTiles[x][y] =
         previous: tile.index
         layer: layer
+
+    if not fromServer
+      ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: 0, map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
 
     @map.removeTile x, y, layer
     Minimap.removeTile x, y
