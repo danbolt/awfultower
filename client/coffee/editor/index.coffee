@@ -331,7 +331,7 @@ module.exports = class Editor
         layer: layer
 
     if not fromServer
-      ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: 0, map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
+      ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: '', map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
 
     @map.removeTile x, y, layer
     Minimap.removeTile x, y

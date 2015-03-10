@@ -104,6 +104,9 @@ addTile = (data, socket) =>
     # write our array cast as string to file in our filesystem
     fs.writeFileSync (path.join __dirname, '..','server/data/' + socket.filename), map_array.toString()
 
+    if data.index is ''
+      data.index = '-1'
+
     # emit to all user in room
     io.to(socket.filename).emit 'add_tile', data
 ###########################################################################################
