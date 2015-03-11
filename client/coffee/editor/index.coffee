@@ -40,7 +40,7 @@ module.exports = class Editor
       store.on('change', (type, rest...) => fluxMaps[type]?(rest...))
 
   bindSocket: =>
-    ServerAgent.bind 'get_new_map', (data) -> 
+    ServerAgent.bind 'get_new_map', (data) ->
       ServerAgent.send 'new_map', {x: MAP_SIZE.x, y: MAP_SIZE.y}
 
     ServerAgent.bind 'add_tile', (data) =>
@@ -305,6 +305,7 @@ module.exports = class Editor
   # minimap
   addTile: (index, x, y, layer, addToUndo = true, fromServer = false) ->
     return if @map.getTile(x, y, layer)?.index is index
+    index = parseInt index
     if addToUndo
       @modifiedTiles[x] ||= {}
       @modifiedTiles[x][y] =
@@ -316,8 +317,7 @@ module.exports = class Editor
       ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: index, map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
 
     @map.putTile index, x, y, layer
-    # TODO: Look into 'cannot set frameName' error when loading new map in
-    # Minimap.addTile index, x, y
+    Minimap.addTile index, x, y
 
   # Remove a tile to the map, add an undo action, basically just if this method
   # isn't being called as the result of an undo action, and remove the tile
