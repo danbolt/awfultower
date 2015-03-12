@@ -27,6 +27,11 @@ module.exports = React.createClass
       <i className="fa fa-bars fa-rotate-90 fa-stack-1x" />
     </li>
 
+  renderLogout: ->
+    <li>
+      <a href="/logout" className="fa fa-sign-out" />
+    </li>
+
   componentDidMount: ->
     $(window).keydown (e) =>
       if e.keyCode is 68
@@ -37,4 +42,5 @@ module.exports = React.createClass
       <li className="logo fa fa-rocket" />
       { @renderErase() }
       { @renderGrid() }
+      { @renderLogout() }
     </ul>

@@ -1,15 +1,8 @@
-express = require 'express'
-path = require 'path'
-http = require 'http'
-SocketManager = require './socket_manager'
+User = require './user'
+App = require './app'
+DB = require './db'
 
-app = express()
+DB.init ->
+  App.init()
+  User.init()
 
-pub = path.join __dirname, '..', "/public"
-
-app.use express.static(pub)
-
-server = http.createServer app
-server.listen 3000
-
-SocketManager.init server
