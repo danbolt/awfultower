@@ -52,16 +52,17 @@ module.exports = class Editor
       @loadMap data
 
     ServerAgent.bind 'stamp_move', (data) =>
-      # @peers[data.uuid].update data
-      @peers[0]?.update data
+      # Just a hack now.. Should be sending up all other peers when someone
+      # joins the room
+      if not @peers[data.uuid]
+        @peers[data.uuid] = new Peer data.uuid, @game
+      @peers[data.uuid].update data
 
     ServerAgent.bind 'join_room', (data) =>
-      # @peers[data.uuid] = new Peer data.uuid, @game
-      @peers.push new Peer(data.uuid, @game)
+      @peers[data.uuid] = new Peer data.uuid, @game
 
     ServerAgent.bind 'leave_room', (data) =>
-      # delete @peers[data.uuid]
-      @peers = []
+      delete @peers[data.uuid]
 
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight

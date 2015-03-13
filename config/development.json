@@ -1,5 +1,6 @@
 {
   "server": {
     "db": "mongodb://localhost/awfultower"
-  }
+  },
+  "sessionSecret": "this is the most secret thing ever.."
 }
