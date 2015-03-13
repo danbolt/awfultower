@@ -23,6 +23,9 @@ class SocketManager
 
   loadMap: (data) =>
 
+    # emit leave message to all users in room
+    io.to(@filename).emit 'leave_room', {uuid: 'bob'}
+
     # leave user's current map room
     @socket.leave @filename
 
@@ -31,6 +34,9 @@ class SocketManager
 
     # join new room for current map
     @socket.join data.filename
+
+    # emit join message to all users in room
+    io.to(@filename).emit 'join_room', {uuid: 'bob'}
 
     # check if filename passed in exists in our filesystem
     if not fs.existsSync path.join __dirname, '../..', 'server/data/' + @filename
