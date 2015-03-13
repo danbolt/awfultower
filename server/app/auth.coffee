@@ -1,9 +1,9 @@
 bcrypt = require 'bcrypt'
-DB = require './db'
+DB = require '../db'
 
 secret = "omgthisissosecretHAX"
 
-class User
+class Auth
   constructor: ->
 
   init: ->
@@ -75,4 +75,4 @@ class User
 
             cb(null)
 
-module.exports = new User()
+module.exports = new Auth()

@@ -14,6 +14,12 @@ class SocketManager
       @socket.on 'load_map', @loadMap
       @socket.on 'new_map', @newMap
       @socket.on 'add_tile', @addTile
+      @socket.on 'stamp_move', @stampMove
+
+  stampMove: (data) =>
+
+    # {uuid: USERNAME, x:x, y:y}
+    socket.emit 'stamp_move', data
 
   loadMap: (data) =>
 

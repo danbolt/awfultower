@@ -1,7 +1,7 @@
 express = require 'express'
 path = require 'path'
 
-User = require '../user'
+Auth = require './auth'
 
 pub = path.join __dirname, '../..', "/public"
 staticFiles = express.static(pub)
@@ -15,14 +15,14 @@ router.get '/', (req, res, next) ->
 # Try to get the login page, or redirect to / if they have a valid session token
 router.get '/login', (req, res, next) ->
   if req.session.usertoken
-    User.compareToken req.session.usertoken, (err) ->
+    Auth.compareToken req.session.usertoken, (err) ->
       if not err then res.redirect '/'
       else res.sendFile "#{pub}/login.html"
   else res.sendFile "#{pub}/login.html"
 
 # Try to log the user in
 router.post '/login', (req, res, next) ->
-  User.login req.body.username, req.body.password, (err, token) ->
+  Auth.login req.body.username, req.body.password, (err, token) ->
     if err
       res.redirect '/login'
     else
@@ -35,10 +35,10 @@ router.get '/logout', (req, res, next) ->
   res.redirect '/'
 
 router.post '/signup', (req, res, next) ->
-  User.create req.body.username, req.body.password, (err, user) ->
+  Auth.create req.body.username, req.body.password, (err, user) ->
 
     return res.redirect '/login' if err
-    User.login req.body.username, req.body.password, (err, token) ->
+    Auth.login req.body.username, req.body.password, (err, token) ->
       if err
         res.redirect '/login'
       else
