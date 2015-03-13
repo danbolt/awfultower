@@ -9,7 +9,7 @@ module.exports = class User
     @socket.on 'stamp_move', @stampMove
 
     @filename = ""
-    console.log @username
+    
   stampMove: (data) =>
     # {uuid: USERNAME, x:x, y:y}
     @io.to(@filename).emit 'stamp_move',
