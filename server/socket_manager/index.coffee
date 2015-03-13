@@ -19,7 +19,7 @@ class SocketManager
   stampMove: (data) =>
 
     # {uuid: USERNAME, x:x, y:y}
-    socket.emit 'stamp_move', data
+    @socket.emit 'stamp_move', data
 
   loadMap: (data) =>
 

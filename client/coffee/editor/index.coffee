@@ -1,6 +1,7 @@
 Minimap = require './minimap'
 Stamp = require './lib/stamp'
 Undo = require './undo'
+Peer = require './lib/peer'
 Grid = require './grid'
 ServerAgent = require './server_agent'
 
@@ -23,6 +24,7 @@ module.exports = class Editor
     @undo = new Undo @
     @bindFlux()
     @bindSocket()
+    @peers = []
 
   # When a flux action is called call the appropriate method here
   bindFlux: ->
@@ -48,6 +50,18 @@ module.exports = class Editor
 
     ServerAgent.bind 'load_map', (data) =>
       @loadMap data
+
+    ServerAgent.bind 'stamp_move', (data) =>
+      # @peers[data.uuid].update data
+      @peers[0]?.update data
+
+    ServerAgent.bind 'join_room', (data) =>
+      # @peers[data.uuid] = new Peer data.uuid, @game
+      @peers.push new Peer(data.uuid, @game)
+
+    ServerAgent.bind 'leave_room', (data) =>
+      # delete @peers[data.uuid]
+      @peers = []
 
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
@@ -267,6 +281,8 @@ module.exports = class Editor
     Minimap.moveHighlight @game.camera.x / tileWidth, @game.camera.y / tileHeight
 
     @grid.move @game.camera.x, @game.camera.y
+
+
 
   # Called from minimap clicks. Move the map to an absolute position
   moveCamera: (x, y) =>
