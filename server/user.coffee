@@ -30,9 +30,10 @@ class User
         return cb(err) if err
         bcrypt.hash password, salt, (err, hash) =>
           return cb(err) if err
-          @collection.insert {username: username, password: hash}, null, (err, user) =>
+          @collection.insert {username: username, password: hash}, (err, user) =>
             return cb(err) if err
-            return cb(null, user)
+            return cb("User failed to be created") unless user?[0]
+            return cb(null, user[0])
 
   # Generate a token when the user logs in
   login: (username, password, cb) ->

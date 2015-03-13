@@ -34,5 +34,17 @@ router.get '/logout', (req, res, next) ->
   req.session.destroy()
   res.redirect '/'
 
+router.post '/signup', (req, res, next) ->
+  User.create req.body.username, req.body.password, (err, user) ->
+
+    return res.redirect '/login' if err
+    User.login req.body.username, req.body.password, (err, token) ->
+      if err
+        res.redirect '/login'
+      else
+        # Save the usertoken in the session
+        req.session.usertoken = token
+        res.redirect '/'
+
 
 module.exports = [router, staticFiles]
