@@ -46,5 +46,12 @@ router.post '/signup', (req, res, next) ->
         req.session.usertoken = token
         res.redirect '/'
 
+router.get '/user', (req, res, next) ->
+  res.send username: null unless (token = req.session.usertoken)
+  Auth.getUsernameFromToken token, (err, username) ->
+    return console.log err if err
+
+    res.send username: username
+
 
 module.exports = [router, staticFiles]

@@ -24,7 +24,17 @@ module.exports = class Editor
     @undo = new Undo @
     @bindFlux()
     @bindSocket()
+    @username = null
+
     @peers = []
+
+    $.ajax
+      url: "user"
+      method: "get"
+      success: (data) =>
+        @username = data.username
+      error: (data) ->
+        console.log "err in get user", data
 
   # When a flux action is called call the appropriate method here
   bindFlux: ->
@@ -52,6 +62,8 @@ module.exports = class Editor
       @loadMap data
 
     ServerAgent.bind 'stamp_move', (data) =>
+      return if not @username or  data.uuid is @username
+
       # Just a hack now.. Should be sending up all other peers when someone
       # joins the room
       if not @peers[data.uuid]
