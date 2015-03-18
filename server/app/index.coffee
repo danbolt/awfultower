@@ -7,7 +7,7 @@ bodyParser = require 'body-parser'
 config = require 'config'
 
 MongoStore = require('connect-mongo')(session)
-SocketManager = require '../socket_manager'
+SocketManager = require './sockets'
 DB = require '../db'
 router = require './router'
 

@@ -28,14 +28,6 @@ module.exports = class Editor
 
     @peers = []
 
-    $.ajax
-      url: "user"
-      method: "get"
-      success: (data) =>
-        @username = data.username
-      error: (data) ->
-        console.log "err in get user", data
-
   # When a flux action is called call the appropriate method here
   bindFlux: ->
     fluxMaps =
@@ -52,8 +44,8 @@ module.exports = class Editor
       store.on('change', (type, rest...) => fluxMaps[type]?(rest...))
 
   bindSocket: =>
-    ServerAgent.bind 'get_new_map', (data) ->
-      ServerAgent.send 'new_map', {x: MAP_SIZE.x, y: MAP_SIZE.y}
+    # ServerAgent.bind 'get_new_map', (data) ->
+    #   ServerAgent.send 'new_map', {x: MAP_SIZE.x, y: MAP_SIZE.y}
 
     ServerAgent.bind 'add_tile', (data) =>
       @addTile data.index, data.x, data.y, @currentLayer, false, true
@@ -62,15 +54,14 @@ module.exports = class Editor
       @loadMap data
 
     ServerAgent.bind 'stamp_move', (data) =>
-      return if not @username or  data.uuid is @username
-
-      # Just a hack now.. Should be sending up all other peers when someone
-      # joins the room
       if not @peers[data.uuid]
         @peers[data.uuid] = new Peer data.uuid, @game
       @peers[data.uuid].update data
 
     ServerAgent.bind 'join_room', (data) =>
+      @peers[name] = new Peer(name, @game) for name in data.users
+
+    ServerAgent.bind 'user_joined', (data) =>
       @peers[data.uuid] = new Peer data.uuid, @game
 
     ServerAgent.bind 'leave_room', (data) =>
