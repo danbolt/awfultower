@@ -1,3 +1,4 @@
+_ = require 'underscore'
 {Stamp, Map} = require './messages'
 
 module.exports = class user
@@ -15,7 +16,7 @@ module.exports = class user
     @room = room
 
     @broadcast 'user_joined', {uuid: @username}
-    @socket.emit 'join_room', {users: @delegate.rooms[room]}
+    @socket.emit 'join_room', {users: _.without @delegate.rooms[room], @username}
 
     @delegate.rooms[room] ||= []
     @delegate.rooms[room].push @username
