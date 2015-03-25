@@ -2,6 +2,7 @@ Nav = require './nav'
 Layers = require './layers'
 Legend = require './legend'
 QuickSelect = require './quick_select'
+Toast = require './toast'
 
 {tileWidth, tileHeight} = require '../editor/utils'
 
@@ -50,4 +51,5 @@ module.exports = React.createClass
         <Layers flux={@props.flux} />
       </section>
       <QuickSelect ref="quickSelect" flux={@props.flux} />
+      <Toast flux={@props.flux} />
     </div>

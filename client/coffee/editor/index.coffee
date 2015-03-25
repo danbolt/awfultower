@@ -333,6 +333,8 @@ module.exports = class Editor
     if not fromServer
       ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: index, map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
 
+    flux.actions.addToast null, null
+
     @map.putTile index, x, y, layer
     Minimap.addTile index, x, y
 
@@ -349,6 +351,8 @@ module.exports = class Editor
 
     if not fromServer
       ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: '', map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
+
+    flux.actions.addToast null, null
 
     @map.removeTile x, y, layer
     Minimap.removeTile x, y

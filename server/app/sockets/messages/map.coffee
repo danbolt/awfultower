@@ -8,21 +8,19 @@ dataPath = path.join(require.main.filename, '../data')
 
 module.exports = class Map
   constructor: (@delegate) ->
-    @delegate.socket.on 'load_map',
-      _.bind(@loadMap, @delegate)
-    @delegate.socket.on 'new_map',
-      _.bind(@newMap, @delegate)
-    @delegate.socket.on 'add_tile',
-      _.bind(@addTile, @delegate)
+    @delegate.socket.on 'load_map', @loadMap
+    @delegate.socket.on 'add_tile', @addTile
 
-  loadMap: (data) ->
+    @data = {}
+
+  loadMap: (data) =>
     name = data.map
 
     db.collection("map").findOne {name: name}, (err, map) =>
       return console.log "Error loading map", err if err
       return console.log "No map found with name: #{name}" unless map
 
-      @joinRoom name
+      @delegate.joinRoom name
       dataFile = map.dataFile
 
       # check if filename passed in exists in our filesystem
@@ -34,47 +32,39 @@ module.exports = class Map
           return console.log "No data" unless data
           mapData = JSON.parse(data)
 
-          @socket.emit 'load_map',
+          @delegate.socket.emit 'load_map',
             map: mapData
             width: map.width
             height: map.height
 
-  newMap: (data) ->
-    return unless data.name and data.width and data.height
-
-    maps = db.collection 'map'
-
-    mapData =
-      name: data.name
-      width: data.width
-      height: data.height
-      dataFile: data.name
-
-    maps.findOne {name: data.name}, (err, map) ->
-      return console.log "Map already exists with name: #{data.name}" if map
-
-      maps.insert mapData, (err, map) =>
-        return console.log(err) if err
-        return console.log("Map failed to be created") unless map
-
-  addTile: (data) ->
+  # Actually write the changes
+  writeChanges: =>
+    # Stores which elements are actually being added. Don't delete anything
+    # until we know things have succeeded
+    deleted = []
+    clearInterval @timer
 
     add = (array) =>
-      # assign tile type to the provided index
-      # using 1-D array as 2-D using formula:
-      #     (data.y*data.map_x) + data.x
-      # this allows for easy CSV storage
-      array[(data.y*data.map_x) + data.x] = data.index
+      for index, tile of @data
+        array[index] = tile
+        deleted.push index
 
-      fs.writeFile path.join(dataPath, @room), JSON.stringify(array), (err) =>
+      fs.writeFile path.join(dataPath, @delegate.room), JSON.stringify(array), (err) =>
         return cb(err) if err
 
-        # emit to all user in room
-        @broadcast 'add_tile', data
+        # Only delete the elements from the data array after they are added
+        delete @data[index] for index in deleted
 
-    fs.exists path.join(dataPath, @room), (exists) =>
+        data = {type: 'info', message: "Saved"}
+
+        # Notify users that it has saved
+        @delegate.broadcast "toast", data
+        @delegate.socket.emit "toast", data
+
+    # Figure out what the current data array looks like
+    fs.exists path.join(dataPath, @delegate.room), (exists) =>
       if exists
-        fs.readFile path.join(dataPath, @room), "utf-8", (err, map_buffer) =>
+        fs.readFile path.join(dataPath, @delegate.room), "utf-8", (err, map_buffer) =>
           return cb(err) if err
 
           map_array = if map_buffer
@@ -83,3 +73,17 @@ module.exports = class Map
 
           add(map_array)
       else add []
+
+  # Batch up changes, clear the interval whenever anything changes. After 2000
+  # seconds (of inactivity), write the changes
+  addTile: (data) =>
+    # Get the position in the 1d array from the x,y values
+    index = (data.y*data.map_x) + data.x
+
+    @data[index] = data.index
+    @delegate.broadcast 'add_tile', data
+
+    clearInterval @timer if @timer
+    @timer = setInterval @writeChanges, 2000
+
+

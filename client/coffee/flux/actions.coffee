@@ -33,3 +33,8 @@ module.exports =
     @dispatch _c.ADD_QUICK_SELECT,
       pos: pos
       index: index
+
+  addToast: (type, message) ->
+    @dispatch _c.ADD_TOAST,
+      type: type
+      message: message
