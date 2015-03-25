@@ -58,6 +58,7 @@ router.get '/user', (req, res, next) ->
 router.get '/m/new', (req, res, next) ->
   res.sendFile "#{pub}/new_map.html"
 
+# Create a map and redirect to it
 router.post '/m/new', (req, res, next) ->
   {name, width, height} = req.body
   return res.send "Field missing" unless name and width and height
@@ -78,4 +79,5 @@ router.post '/m/new', (req, res, next) ->
       return res.json "Map failed to be created" unless map
 
       res.redirect "/?map=#{name}"
+
 module.exports = [router, staticFiles]
