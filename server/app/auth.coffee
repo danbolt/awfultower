@@ -75,4 +75,13 @@ class Auth
 
             cb(null)
 
+  # Given a token, if it is valid, return the username
+  getUsernameFromToken: (token, cb) ->
+    return cb("No token given") unless token
+
+    [username] = token.split("--::--")
+    @compareToken token, (err) ->
+      return cb(err) if err
+      cb(null, username)
+
 module.exports = new Auth()

@@ -11,4 +11,4 @@ class ServerAgent
     @socket.on event, (data) ->
       callback data
 
-module.exports = new ServerAgent()
+module.exports = window.server_agent = new ServerAgent()

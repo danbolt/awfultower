@@ -2,6 +2,8 @@
 # is dragging / filling. It also holds the bounds which are used for actually
 # adding the changes to the map
 
+ServerAgent = require '../server_agent'
+
 {tileWidth, tileHeight} = require '../utils'
 
 class Stamp
@@ -93,6 +95,8 @@ class Stamp
     # Translate to world pos
     @preview.x = x * tileWidth
     @preview.y = y * tileHeight
+
+    ServerAgent.send 'stamp_move', {uuid: "", x: x, y: y}
 
   setErase: (erase) ->
     @erase = erase

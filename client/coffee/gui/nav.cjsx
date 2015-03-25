@@ -27,8 +27,13 @@ module.exports = React.createClass
       <i className="fa fa-bars fa-rotate-90 fa-stack-1x" />
     </li>
 
+  renderNew: ->
+    <li className="control">
+      <a href="/m/new" className="fa fa-plus-square" />
+    </li>
+
   renderLogout: ->
-    <li>
+    <li className="control">
       <a href="/logout" className="fa fa-sign-out" />
     </li>
 
@@ -39,8 +44,11 @@ module.exports = React.createClass
 
   render: ->
     <ul id="hud">
-      <li className="logo fa fa-rocket" />
+      <li className="logo fa fa-map-marker" />
       { @renderErase() }
       { @renderGrid() }
-      { @renderLogout() }
+      <div className="lower">
+        { @renderNew() }
+        { @renderLogout() }
+      </div>
     </ul>

@@ -1,10 +1,12 @@
 Minimap = require './minimap'
 Stamp = require './lib/stamp'
 Undo = require './undo'
+Peer = require './lib/peer'
 Grid = require './grid'
 ServerAgent = require './server_agent'
+utils = require './utils'
 
-{tileWidth, tileHeight, sign} = require './utils'
+{tileWidth, tileHeight, sign} = utils
 
 MAP_SIZE = {x: 100, y: 100} # TODO this needs to be configurable
 
@@ -23,6 +25,9 @@ module.exports = class Editor
     @undo = new Undo @
     @bindFlux()
     @bindSocket()
+    @username = null
+
+    @peers = []
 
   # When a flux action is called call the appropriate method here
   bindFlux: ->
@@ -40,14 +45,26 @@ module.exports = class Editor
       store.on('change', (type, rest...) => fluxMaps[type]?(rest...))
 
   bindSocket: =>
-    ServerAgent.bind 'get_new_map', (data) ->
-      ServerAgent.send 'new_map', {x: MAP_SIZE.x, y: MAP_SIZE.y}
-
     ServerAgent.bind 'add_tile', (data) =>
       @addTile data.index, data.x, data.y, @currentLayer, false, true
 
     ServerAgent.bind 'load_map', (data) =>
       @loadMap data
+
+    ServerAgent.bind 'stamp_move', (data) =>
+      if not @peers[data.uuid]
+        @peers[data.uuid] = new Peer data.uuid, @game
+      @peers[data.uuid].update data
+
+    ServerAgent.bind 'join_room', (data) =>
+      if data.users?.length
+        @peers[name] = new Peer(name, @game) for name in data.users
+
+    ServerAgent.bind 'user_joined', (data) =>
+      @peers[data.uuid] = new Peer data.uuid, @game
+
+    ServerAgent.bind 'leave_room', (data) =>
+      delete @peers[data.uuid]
 
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
@@ -82,24 +99,22 @@ module.exports = class Editor
     undoKey.onDown.add ( => @undo.undo() ), @
     redoKey.onDown.add ( => @undo.redo() ), @
 
-    # load default lobby map
-    # this is purely for testing, as it would actually be user triggered
-    ServerAgent.send 'load_map', {filename:'nerds'}
+    @getMap()
 
-    #this function lets us call 'window.changeMap(MAP_NAME)' from Chrome console
-    window.changeMap = (filename) =>
-      @getMap filename
-
-  getMap: (filename) =>
-    ServerAgent.send 'load_map', {filename:filename}
+  getMap: =>
+    return unless (map = utils.getParameterByName 'map')
+    ServerAgent.send 'load_map', {map: map}
 
   loadMap: (data) =>
-    for j in [0...MAP_SIZE.y]
-      for i in [0...MAP_SIZE.x]
-        if data['map'][(j*MAP_SIZE.x) + i] isnt ''
-          @addTile data['map'][(j*MAP_SIZE.x) + i], i, j, 0, false, true
+    width = data.width
+    height = data.height
+    map = data.map
+
+    for j in [0...height]
+      for i in [0...width]
+        if (tile = data['map'][(j*width) + i])? and tile isnt ''
+          @addTile map[(j*width) + i], i, j, 0, false, true
         else if not @initial_load
-          # this could be optimized when we figure out how to wipe tilemap clean
           @addTile '-1', i, j, 0, false, true
     if @initial_load
       @initial_load = false
@@ -267,6 +282,8 @@ module.exports = class Editor
     Minimap.moveHighlight @game.camera.x / tileWidth, @game.camera.y / tileHeight
 
     @grid.move @game.camera.x, @game.camera.y
+
+
 
   # Called from minimap clicks. Move the map to an absolute position
   moveCamera: (x, y) =>
