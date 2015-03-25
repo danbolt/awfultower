@@ -21,7 +21,7 @@ install:
 Clone the repo, build it, and go!
 
 ```
-git clone git clone https://github.com/toadums/awfultower
+git clone https://github.com/toadums/awfultower
 cd awfultower
 npm install && bower install
 gulp
