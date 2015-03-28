@@ -60,24 +60,29 @@ router.get '/m/new', (req, res, next) ->
 
 # Create a map and redirect to it
 router.post '/m/new', (req, res, next) ->
+  res.send username: null unless (token = req.session.usertoken)
   {name, width, height} = req.body
   return res.send "Field missing" unless name and width and height
 
   maps = db.collection 'map'
 
-  mapData =
-    name: name
-    width: width
-    height: height
-    layers: []
+  Auth.getUsernameFromToken token, (err, username) ->
+    return console.log err if err
 
-  maps.findOne {name: name}, (err, map) ->
-    return res.json "Map already exists with name: #{name}" if map
+    mapData =
+      name: name
+      width: width
+      height: height
+      layers: []
+      users: [username]
 
-    maps.insert mapData, (err, map) =>
-      return res.json err if err
-      return res.json "Map failed to be created" unless map
+    maps.findOne {name: name}, (err, map) ->
+      return res.json "Map already exists with name: #{name}" if map
 
-      res.redirect "/?map=#{name}"
+      maps.insert mapData, (err, map) =>
+        return res.json err if err
+        return res.json "Map failed to be created" unless map
+
+        res.redirect "/?map=#{map.ops[0]?._id}"
 
 module.exports = [router, staticFiles]
