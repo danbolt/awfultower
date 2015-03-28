@@ -1,89 +1,86 @@
 _ = require 'underscore'
 fs = require 'fs'
 path = require 'path'
-
-db = require '../../../db'
+DB = require '../../../db'
 
 dataPath = path.join(require.main.filename, '../data')
 
+ObjectId = require('mongodb').ObjectID
+
 module.exports = class Map
   constructor: (@delegate) ->
+    @currentLayer = null
+
+    @layers = DB.collection 'layer'
+    @maps = DB.collection 'map'
+
     @delegate.socket.on 'load_map', @loadMap
     @delegate.socket.on 'add_tile', @addTile
-
-    @data = {}
+    @delegate.socket.on 'add_layer', @addLayer
+    @delegate.socket.on 'remove_tile', @removeTile
 
   loadMap: (data) =>
     name = data.map
 
-    db.collection("map").findOne {name: name}, (err, map) =>
+    @maps.findOne {name: name}, (err, map) =>
       return console.log "Error loading map", err if err
       return console.log "No map found with name: #{name}" unless map
 
+      data = {width: map.width, height: map.height, name: map.name}
+
       @delegate.joinRoom name
-      dataFile = map.dataFile
+      @currentMap = map
 
-      # check if filename passed in exists in our filesystem
-      fs.exists path.join(dataPath, dataFile), (exists) =>
-        return unless exists
+      if map.layers
+        @layers.find({_id: {$in: map.layers}}).toArray (err, layers) =>
+          return console.log "Error loading layers", err if err
+          data.layers = layers
+          @delegate.socket.emit 'load_map', data
 
-        fs.readFile path.join(dataPath, dataFile), "utf-8", (err, data) =>
-          return console.log "Error loading map", err if err
-          return console.log "No data" unless data
-          mapData = JSON.parse(data)
+          if data.layers?.length
+            @currentLayer = layers[0]
 
-          @delegate.socket.emit 'load_map',
-            map: mapData
-            width: map.width
-            height: map.height
+      else
+        @delegate.socket.emit 'load_map', data
 
-  # Actually write the changes
-  writeChanges: =>
-    # Stores which elements are actually being added. Don't delete anything
-    # until we know things have succeeded
-    deleted = []
-    clearInterval @timer
+  addLayer: (data) =>
+    name = data.name
+    console.log "new layer! #{name}"
 
-    add = (array) =>
-      for index, tile of @data
-        array[index] = tile
-        deleted.push index
+    return console.log "No name specified to create layer" unless name
+    @layers.insert {name: name}, (err, layer) =>
+      return console.log "Error saving layer", err if err
+      return console.log "Layer failed to be created" unless layer?.ops?[0]
 
-      fs.writeFile path.join(dataPath, @delegate.room), JSON.stringify(array), (err) =>
-        return cb(err) if err
+      id = layer.ops[0]._id
 
-        # Only delete the elements from the data array after they are added
-        delete @data[index] for index in deleted
-
-        data = {type: 'info', message: "Saved"}
-
-        # Notify users that it has saved
-        @delegate.broadcast "toast", data
-        @delegate.socket.emit "toast", data
-
-    # Figure out what the current data array looks like
-    fs.exists path.join(dataPath, @delegate.room), (exists) =>
-      if exists
-        fs.readFile path.join(dataPath, @delegate.room), "utf-8", (err, map_buffer) =>
-          return cb(err) if err
-
-          map_array = if map_buffer
-            JSON.parse map_buffer
-          else []
-
-          add(map_array)
-      else add []
+      @maps.update {_id: @currentMap._id}, {$push: {layers: id}}, (err, result) =>
+        return console.log "Could not push new layer to map", err if err
 
   # Batch up changes, clear the interval whenever anything changes. After 2000
   # seconds (of inactivity), write the changes
   addTile: (data) =>
-    # Get the position in the 1d array from the x,y values
-    index = (data.y*data.map_x) + data.x
-
-    @data[index] = data.index
     @delegate.broadcast 'add_tile', data
 
-    clearInterval @timer if @timer
-    @timer = setInterval @writeChanges, 2000
+    return console.log "No id specified" unless (id = ObjectId(data.layerId))
 
+    property = "data.#{data.x}.#{data.y}"
+
+    obj = {}
+    obj[property] = data.index
+
+    @layers.update {_id: id}, {$set: obj}
+
+  # Remove the tile in the database
+  removeTile: (data) =>
+    @delegate.broadcast 'remove_tile', data
+
+    return console.log "No id specified" unless (id = ObjectId(data.layerId))
+
+    property = "data.#{data.x}.#{data.y}"
+
+    obj = {}
+    obj[property] = ""
+
+    @layers.update {_id: id}, {$unset: obj}
 

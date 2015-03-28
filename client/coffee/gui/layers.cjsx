@@ -1,3 +1,4 @@
+ServerAgent = require '../editor/server_agent'
 Layer = require './layer'
 
 module.exports = React.createClass
@@ -16,12 +17,12 @@ module.exports = React.createClass
     layer = "layer #{Object.keys(layers).length + 1}"
 
     @getFlux().actions.addLayer layer
+    ServerAgent.send 'add_layer', {name: layer}
 
   changeGlobalOpacity: ->
     @getFlux().actions.toggleGlobalOpacity()
 
   componentDidMount: ->
-    @getFlux().actions.addLayer "layer 1"
     @sortable()
 
   sortable: ->

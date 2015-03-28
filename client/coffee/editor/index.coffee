@@ -48,6 +48,9 @@ module.exports = class Editor
     ServerAgent.bind 'add_tile', (data) =>
       @addTile data.index, data.x, data.y, @currentLayer, false, true
 
+    ServerAgent.bind 'remove_tile', (data) =>
+      @removeTile data.x, data.y, false, true
+
     ServerAgent.bind 'load_map', (data) =>
       @loadMap data
 
@@ -86,7 +89,6 @@ module.exports = class Editor
 
     @map = @game.add.tilemap()
     @map.addTilesetImage 'level'
-    @addLayer 'layer 1'
 
     @cursors = @game.input.keyboard.createCursorKeys()
 
@@ -108,16 +110,19 @@ module.exports = class Editor
   loadMap: (data) =>
     width = data.width
     height = data.height
-    map = data.map
+    name = data.name
 
-    for j in [0...height]
-      for i in [0...width]
-        if (tile = data['map'][(j*width) + i])? and tile isnt ''
-          @addTile map[(j*width) + i], i, j, 0, false, true
-        else if not @initial_load
-          @addTile '-1', i, j, 0, false, true
-    if @initial_load
-      @initial_load = false
+    layers = data.layers
+
+    if layers
+      for layer in layers
+        continue if not layer.name or @layers[layer.name]
+        flux.actions.addLayer(layer.name)
+        @layers[layer.name].id = layer._id
+
+        for x, ys of layer.data
+          for y, index of ys
+            @addTile index, x, y, @layers[layer.name], false, true
 
   # When the world resizes, this gets called
   resize: =>
@@ -133,6 +138,10 @@ module.exports = class Editor
     else
       # Create the initial layer
       @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
+
+    @layers[name].id = name
+
+    @currentLayer ||= @layers[name]
 
     @changeLayer name
     @layers[name].resizeWorld()
@@ -151,6 +160,7 @@ module.exports = class Editor
   # and are displayed based on z-index
   updateGlobalOpacity: =>
     name = @currentLayer?.name
+
     for n, layer of @layers
       if @globalOpacity is false
         layer.alpha = 1
@@ -215,6 +225,8 @@ module.exports = class Editor
     @modifiedTiles = null
 
   mouseMove: (e) =>
+    return unless @currentLayer
+
     # Get tile coords of mouse
     x = @currentLayer.getTileX @game.input.activePointer.worldX
     y = @currentLayer.getTileY @game.input.activePointer.worldY
@@ -283,8 +295,6 @@ module.exports = class Editor
 
     @grid.move @game.camera.x, @game.camera.y
 
-
-
   # Called from minimap clicks. Move the map to an absolute position
   moveCamera: (x, y) =>
     @game.camera.x = x * MAP_SIZE.x * tileWidth - @game.width / 2
@@ -331,7 +341,7 @@ module.exports = class Editor
         layer: layer
 
     if not fromServer
-      ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: index, map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
+      ServerAgent.send 'add_tile', {x: x, y: y, layerId: layer.id, index: index}
 
     flux.actions.addToast null, null
 
@@ -350,7 +360,7 @@ module.exports = class Editor
         layer: layer
 
     if not fromServer
-      ServerAgent.send 'add_tile', {x: x, y: y, layer: layer.index, index: '', map_x: MAP_SIZE.x, map_y: MAP_SIZE.y}
+      ServerAgent.send 'remove_tile', {x: x, y: y, layerId: layer.id}
 
     flux.actions.addToast null, null
 

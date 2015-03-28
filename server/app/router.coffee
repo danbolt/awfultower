@@ -69,7 +69,7 @@ router.post '/m/new', (req, res, next) ->
     name: name
     width: width
     height: height
-    dataFile: name
+    layers: []
 
   maps.findOne {name: name}, (err, map) ->
     return res.json "Map already exists with name: #{name}" if map
