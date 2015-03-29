@@ -10,6 +10,10 @@ module.exports = class user
   broadcast: (message, data) ->
     @socket.broadcast.emit message, data
 
+  broadcastWithSender: (message, data) ->
+    @socket.broadcast.emit message, data
+    @socket.emit message, data
+
   joinRoom: (room) ->
     @socket.leave @room
     @socket.join room

@@ -17,13 +17,13 @@ module.exports = class Undo
     @_undo.push {action: action, tiles: _tiles}
 
   # Undo an event, push that event onto the redo stack
-  undo: ->
+  undo: =>
     return unless (item = @_undo.pop())
     @performAction item
     @_redo.push @swap item
 
   # Redo an event, push that event onto the undo stack
-  redo: ->
+  redo: =>
     return unless (item = @_redo.pop())
     @performAction item
     @_undo.push @swap item

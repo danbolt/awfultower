@@ -14,7 +14,6 @@ nodemon =         require 'gulp-nodemon'
 paths =
   public:         './public'
   scripts:        './client/coffee'
-  vendor:         './vendor'
   html:           './client/assets/*.html'
   images:         './client/assets/images/**'
   styles:         './client/styles/**'
@@ -42,20 +41,19 @@ bundler.on 'update', bundle
 gulp.task 'scripts', bundle
 
 gulp.task 'vendor', ->
-
-  gulp.src bower().concat("vendor/*.js")
+  gulp.src bower()
     .pipe filter("**/*.js")
     .pipe concat(files.vendor.js)
     .pipe gulp.dest(paths.public)
 
-  gulp.src bower().concat("vendor/*.css")
-    .pipe filter("**.*.css")
+  gulp.src bower()
+    .pipe filter("**/*.css")
     .pipe concat("vendor.css")
     .pipe gulp.dest(paths.public)
 
 gulp.task 'sass', ->
   gulp.src "#{paths.styles}/app.sass"
-    .pipe sass(errLogToConsole: true, sourceComments: 'normal', indentedSyntax: 'true', loadPath: [__dirname + '/bower_components/fontawesome/scss/'])
+    .pipe sass(errLogToConsole: true, sourceComments: 'normal', indentedSyntax: 'true', loadPath: [__dirname + '/bower_components/fontawesome/scss/'], includePaths: require('node-bourbon').includePaths)
     .pipe gulp.dest(paths.public)
 
 gulp.task 'assets', ->
@@ -67,7 +65,6 @@ gulp.task 'assets', ->
 
 gulp.task 'watch', ->
   gulp.watch paths.scripts, ['scripts']
-  gulp.watch paths.vendor, ['vendor']
   gulp.watch paths.assets, ['assets']
   gulp.watch paths.styles, ['sass']
 

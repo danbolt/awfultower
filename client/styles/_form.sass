@@ -1,0 +1,30 @@
+.form
+  fieldset
+    border: none
+    padding: 0
+
+  label
+    font-size: 12px
+
+  input[type="text"], input[type="number"]
+    box-sizing: border-box
+    display: block
+    width: 100%
+    color: black
+    font-size: 14px
+    padding: 4px 8px
+    margin-bottom: 10px
+
+
+    &:active, &:focus
+      outline: none
+
+  .controls
+    text-align: right
+
+    > button
+      margin-left: 10px
+
+      &:hover
+        color: $highlight
+

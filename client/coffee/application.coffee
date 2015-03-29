@@ -11,6 +11,7 @@ stores =
   QuickSelectStore: new Stores.QuickSelect()
   StateStore: new Stores.State()
   ToastStore: new Stores.Toast()
+  ModalStore: new Stores.Modal()
 
 flux = new Fluxxor.Flux stores, Actions
 window.flux = flux

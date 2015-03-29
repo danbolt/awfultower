@@ -69,6 +69,10 @@ module.exports = class Editor
     ServerAgent.bind 'leave_room', (data) =>
       delete @peers[data.uuid]
 
+    ServerAgent.bind 'add_layer', (data) =>
+      flux.actions.addLayer(data.name)
+      @layers[data.name].id = data.layerId
+
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
 
@@ -98,8 +102,9 @@ module.exports = class Editor
     # Register undo and redo
     undoKey = @game.input.keyboard.addKey Phaser.Keyboard.U
     redoKey = @game.input.keyboard.addKey Phaser.Keyboard.Y
-    undoKey.onDown.add ( => @undo.undo() ), @
-    redoKey.onDown.add ( => @undo.redo() ), @
+
+    undoKey.onDown.add @undo.undo, @
+    redoKey.onDown.add @undo.redo, @
 
     @getMap()
 
@@ -132,16 +137,13 @@ module.exports = class Editor
   # Add a new phaser.tileMapLayer to our game
   addLayer: (name) =>
 
-    if Object.keys(@layers).length
-      # If we already have a layer, add a blank layer
-      @layers[name] = @map.createBlankLayer name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
-    else
-      # Create the initial layer
-      @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
-
-    @layers[name].id = name
-
-    @currentLayer ||= @layers[name]
+    if not @layers[name]
+      if Object.keys(@layers).length
+        # If we already have a layer, add a blank layer
+        @layers[name] = @map.createBlankLayer name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
+      else
+        # Create the initial layer
+        @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
 
     @changeLayer name
     @layers[name].resizeWorld()

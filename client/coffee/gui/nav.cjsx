@@ -13,6 +13,9 @@ module.exports = React.createClass
   toggleGrid: ->
     @getFlux().actions.toggleGrid()
 
+  newMapClick: ->
+    @getFlux().actions.openModal 'new_map', {}
+
   renderErase: ->
     cx = "control fa fa-eraser"
     cx += " active" if @state.erase
@@ -29,7 +32,7 @@ module.exports = React.createClass
 
   renderNew: ->
     <li className="control">
-      <a href="/m/new" className="fa fa-plus-square" />
+      <i className="fa fa-plus-square" onClick={@newMapClick} />
     </li>
 
   renderLogout: ->

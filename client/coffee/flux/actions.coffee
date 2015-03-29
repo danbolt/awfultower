@@ -38,3 +38,11 @@ module.exports =
     @dispatch _c.ADD_TOAST,
       type: type
       message: message
+
+  openModal: (type, props) ->
+    @dispatch _c.OPEN_MODAL,
+      type: type
+      props: props
+
+  closeModal: ->
+    @dispatch _c.CLOSE_MODAL

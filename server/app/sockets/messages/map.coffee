@@ -19,6 +19,7 @@ module.exports = class Map
     @delegate.socket.on 'add_tile', @addTile
     @delegate.socket.on 'add_layer', @addLayer
     @delegate.socket.on 'remove_tile', @removeTile
+    @delegate.socket.on 'new_map', @newMap
 
   getMap: =>
     matcher = /map=([a-zA-Z-0-9\_\-]+)/
@@ -27,21 +28,40 @@ module.exports = class Map
     map = ref.match(matcher)?[1]
 
     if map
-      ObjectId map
+      try
+        ObjectId map
+      catch
+        map
+
     else null
 
   userCanAccessMap: (cb) =>
     map = @getMap()
 
-    @maps.findOne {_id: map}, (err, map) =>
+    params = if map instanceof ObjectId
+      {_id: map}
+    else
+      # namespace by user
+      {name: map, users: {$all: [@delegate.username]}}
+
+    @maps.findOne params, (err, map) =>
       return cb "Error loading map", err if err
-      return cb "No map found with name: #{name}" unless map
+      return cb "No map found" unless map
 
       users = map.users
       unless users and (@delegate.username in users)
         return cb "You do not have permission to that map"
       else
         cb(null, map)
+
+  newMap: (data) =>
+
+    return unless data.name and data.width and data.height
+    data.layers = []
+    data.users = [@delegate.username]
+
+    @maps.insert data, (err, map) =>
+
 
   loadMap: (data) =>
     async.waterfall [
@@ -71,10 +91,10 @@ module.exports = class Map
       return console.log err if err
 
   addLayer: (data) =>
+    name = data.name
     async.waterfall [
       @userCanAccessMap
       (map, cb) =>
-        name = data.name
         return cb "No name specified to create layer" unless name
 
         @layers.insert {name: name}, (err, layer) =>
@@ -87,7 +107,11 @@ module.exports = class Map
       (map, layerId, cb) =>
           @maps.update {_id: map._id}, {$push: {layers: layerId}}, (err, result) =>
             return cb "Could not push new layer to map", err if err
-            cb()
+            cb(null, layerId)
+
+      (layerId, cb) =>
+        @delegate.broadcastWithSender 'add_layer', {layerId: layerId, name: name}
+        cb()
 
     ], (err, result) =>
       return console.log err if err

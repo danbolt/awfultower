@@ -3,6 +3,7 @@ Layers = require './layers'
 Legend = require './legend'
 QuickSelect = require './quick_select'
 Toast = require './toast'
+ModalManager = require './modal_manager'
 
 {tileWidth, tileHeight} = require '../editor/utils'
 
@@ -52,4 +53,6 @@ module.exports = React.createClass
       </section>
       <QuickSelect ref="quickSelect" flux={@props.flux} />
       <Toast flux={@props.flux} />
+      <ModalManager flux={@props.flux} />
+
     </div>

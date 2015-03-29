@@ -1,0 +1,45 @@
+$width: 500px
+$padding: 10px
+
+#modal-manager
+  &.open
+    position: fixed
+    top: 0
+    bottom: 0
+    right: 0
+    left: 0
+    background-color: rgba(black, 0.5)
+
+.modal
+  position: fixed
+
+  width: $width
+  height: 400px
+
+  background-color: white
+
+  left: 50%
+  margin-left: -$width/2
+
+  top: 50%
+  margin-top: -25%
+
+  background-color: $background-color
+
+  .header
+    padding: $padding
+    background-color: $dark-highlight
+
+    h2
+      margin: 0
+      display: inline-block
+
+    .close
+      float: right
+      line-height: 32px
+
+      &:hover
+        color: $highlight
+
+  .content
+    padding: $padding
