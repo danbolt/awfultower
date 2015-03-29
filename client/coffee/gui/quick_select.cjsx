@@ -14,6 +14,7 @@ module.exports = React.createClass
 
   componentDidMount: ->
     $(window).keydown (e) =>
+      return if @getFlux().stores.ModalStore.open
       if 48 <= e.keyCode <= 57
         Stamp.setSingle @state.quickSelectIndicies[e.keyCode-48]
 

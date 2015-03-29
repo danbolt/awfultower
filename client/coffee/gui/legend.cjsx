@@ -17,8 +17,11 @@ module.exports = React.createClass
 
   componentDidMount: ->
     $(window).keydown (e) =>
+      return if @getFlux().stores.ModalStore.open
       @quickSelect = key - 48 if 48 <= (key = e.keyCode) <= 57
+
     $(window).keyup =>
+      return if @getFlux().stores.ModalStore.open
       @quickSelect = null
 
   position: (e) ->

@@ -42,6 +42,7 @@ module.exports = React.createClass
 
   componentDidMount: ->
     $(window).keydown (e) =>
+      return if @getFlux().stores.ModalStore.open
       if e.keyCode is 68
         @toggleErase()
 

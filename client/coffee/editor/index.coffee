@@ -99,12 +99,13 @@ module.exports = class Editor
     @game.input.onUp.add @mouseUp, @
     @game.input.addMoveCallback @mouseMove, @
 
-    # Register undo and redo
-    undoKey = @game.input.keyboard.addKey Phaser.Keyboard.U
-    redoKey = @game.input.keyboard.addKey Phaser.Keyboard.Y
+    $(window).keydown (e) =>
+      return if flux.stores.ModalStore.open
 
-    undoKey.onDown.add @undo.undo, @
-    redoKey.onDown.add @undo.redo, @
+      if e.keyCode is 89
+        @undo.redo()
+      else if e.keyCode is 85
+        @undo.undo()
 
     @getMap()
 
