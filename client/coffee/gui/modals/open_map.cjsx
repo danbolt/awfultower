@@ -23,10 +23,12 @@ module.exports = React.createClass
 
   submit: (e) ->
     e.preventDefault()
+    return unless (name = @state.selectedMap?.name)
+    window.location = "?map=#{name}"
 
   mapClick: (e) ->
-    name = $(e.target).data('name')
-    window.location = "?map=#{name}"
+    id = $(e.target).data('id')
+    @setState selectedMap: _.where(@state.maps, {_id: id})?[0]
 
   renderMaps: ->
     return unless (maps = @state?.maps)
@@ -34,7 +36,10 @@ module.exports = React.createClass
       <ul className="maps">
         {
           for map in maps
-            <li onClick={@mapClick} key={map.id} data-name={map.name}>
+            cx = "map"
+            cx += " active" if @state.selectedMap?._id is map._id
+
+            <li onClick={@mapClick} key={map._id} data-id={map._id} className={cx}>
               { map.name }
             </li>
         }
@@ -44,6 +49,6 @@ module.exports = React.createClass
       { @renderMaps() }
       <div className="controls">
         <button className="cancel" onClick={@cancel}> Cancel </button>
-        <button className="submit" onClick={@submit}> Create </button>
+        <button className="submit" onClick={@submit}> Open </button>
       </div>
     </div>

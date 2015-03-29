@@ -1,0 +1,19 @@
+@mixin basic-list()
+  li
+    font-size: 14px
+    line-height: 24px
+
+@mixin dark-list()
+  @include basic-list
+
+  background-color: $nav-color
+
+  li
+    padding: 0 10px
+    &:hover
+      color: $highlight
+
+    &.active
+      background-color: $highlight
+      &:hover
+        color: black
