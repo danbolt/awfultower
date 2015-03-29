@@ -56,12 +56,22 @@ module.exports = class Map
 
   newMap: (data) =>
 
-    return unless data.name and data.width and data.height
-    data.layers = []
-    data.users = [@delegate.username]
+    async.waterfall [
+      (cb) =>
+        return unless data.name and data.width and data.height
+        data.layers = []
+        data.users = [@delegate.username]
 
-    @maps.insert data, (err, map) =>
+        @maps.insert data, (err, map) =>
+          return cb(err) if err
+          return cb("Map failed to be created") unless map?.ops?[0]
+          cb(null, map.ops[0])
 
+    ], (err, result) =>
+      return console.log err if err
+      result.responseId = data.responseId if data.responseId
+
+      @delegate.socket.emit 'response', result
 
   loadMap: (data) =>
     async.waterfall [

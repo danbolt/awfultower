@@ -31,6 +31,12 @@ module.exports = React.createClass
         name: @state.name
         width: @state.width
         height: @state.height
+      , (err, result) =>
+
+        return console.log err if err
+        if result.name
+          window.location = "?map=#{result.name}"
+
       @close()
 
     e.preventDefault()
