@@ -20,7 +20,7 @@ class ServerAgent
     if cb?
       id = @counter
       @promises[id] = cb
-
+      data ||= {}
       data.responseId = id
       @counter++
 

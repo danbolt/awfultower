@@ -20,6 +20,7 @@ module.exports = class Map
     @delegate.socket.on 'add_layer', @addLayer
     @delegate.socket.on 'remove_tile', @removeTile
     @delegate.socket.on 'new_map', @newMap
+    @delegate.socket.on 'get_maps', @getMaps
 
   getMap: =>
     matcher = /map=([a-zA-Z-0-9\_\-]+)/
@@ -54,6 +55,20 @@ module.exports = class Map
       else
         cb(null, map)
 
+  getMaps: (data) =>
+    async.waterfall [
+      (cb) =>
+        @maps.find({users: {$all: [@delegate.username]}}, {name: true}).toArray (err, results) =>
+          return cb(err) if err
+
+
+          cb(null, { maps: results })
+
+    ], (err, result) =>
+      return console.log err if err
+      result.responseId = data.responseId if data.responseId?
+      @delegate.socket.emit 'response', result
+
   newMap: (data) =>
 
     async.waterfall [
@@ -69,7 +84,7 @@ module.exports = class Map
 
     ], (err, result) =>
       return console.log err if err
-      result.responseId = data.responseId if data.responseId
+      result.responseId = data.responseId if data.responseId?
 
       @delegate.socket.emit 'response', result
 

@@ -1,4 +1,5 @@
 NewMap = require './modals/new_map'
+OpenMap = require './modals/open_map'
 
 module.exports = React.createClass
   displayName: "ModalManager"
@@ -19,6 +20,8 @@ module.exports = React.createClass
     switch @state.type
       when "new_map"
         <NewMap {...@state.props} {...@props} />
+      when "open_map"
+        <OpenMap {...@state.props} {...@props} />
 
   render: ->
     cx = ""
