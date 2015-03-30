@@ -4,8 +4,8 @@ module.exports =
   toggleErase: (erase) ->
     @dispatch _c.TOGGLE_ERASE, erase
 
-  addLayer: (name) ->
-    @dispatch _c.ADD_LAYER, name
+  addLayer: (layer) ->
+    @dispatch _c.ADD_LAYER, layer
 
   toggleLayerLocked: (layer, locked) ->
     @dispatch _c.TOGGLE_LAYER_LOCKED,
@@ -46,3 +46,6 @@ module.exports =
 
   closeModal: ->
     @dispatch _c.CLOSE_MODAL
+
+  removeLayer: (layerId) ->
+    @dispatch _c.REMOVE_LAYER, layerId

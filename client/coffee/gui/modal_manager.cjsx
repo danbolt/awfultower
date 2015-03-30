@@ -1,5 +1,6 @@
 NewMap = require './modals/new_map'
 OpenMap = require './modals/open_map'
+EditLayer = require './modals/edit_layer'
 
 module.exports = React.createClass
   displayName: "ModalManager"
@@ -22,6 +23,8 @@ module.exports = React.createClass
         <NewMap {...@state.props} {...@props} />
       when "open_map"
         <OpenMap {...@state.props} {...@props} />
+      when "edit_layer"
+        <EditLayer {...@state.props} {...@props} />
 
   render: ->
     cx = ""

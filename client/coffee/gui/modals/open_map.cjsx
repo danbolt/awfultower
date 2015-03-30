@@ -44,6 +44,7 @@ module.exports = React.createClass
             </li>
         }
       </ul>
+
   renderContent: ->
     <div className='form'>
       { @renderMaps() }

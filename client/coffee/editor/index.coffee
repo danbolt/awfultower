@@ -33,6 +33,7 @@ module.exports = class Editor
   bindFlux: ->
     fluxMaps =
       ADD_LAYER: @addLayer
+      REMOVE_LAYER: @removeLayer
       CHANGE_LAYER: @changeLayer
       TOGGLE_LAYER_VISIBLE: @hideLayer
       TOGGLE_LAYER_LOCKED: @lockLayer
@@ -70,8 +71,11 @@ module.exports = class Editor
       delete @peers[data.uuid]
 
     ServerAgent.bind 'add_layer', (data) =>
-      flux.actions.addLayer(data.name)
-      @layers[data.name].id = data.layerId
+      flux.actions.addLayer(data)
+      flux.actions.changeLayer(data._id)
+
+    ServerAgent.bind 'remove_layer', (data) =>
+      flux.actions.removeLayer(data.layerId)
 
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
@@ -122,18 +126,21 @@ module.exports = class Editor
 
     if layers
       for layer in layers
-        continue if not layer.name or @layers[layer.name]
-        flux.actions.addLayer(layer.name)
-        @layers[layer.name].id = layer._id
+        continue if not layer._id or @layers[layer._id]
+        flux.actions.addLayer(layer)
+        @layers[layer._id].id = layer._id
 
         for x, ys of layer.data
           for y, index of ys
-            @addTile index, x, y, @layers[layer.name], false, true
+            @addTile index, x, y, @layers[layer._id], false, true
 
   # When the world resizes, this gets called
   resize: =>
     @grid.resizeGrid()
     Minimap.resizeHighlight()
+
+  removeLayer: (layerId) =>
+    @layers[layerId]?.destroy()
 
   # Add a new phaser.tileMapLayer to our game
   addLayer: (name) =>
@@ -147,6 +154,7 @@ module.exports = class Editor
         @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
 
     @changeLayer name
+    @layers[name].id = name
     @layers[name].resizeWorld()
 
   lockLayer: (layer, locked) =>

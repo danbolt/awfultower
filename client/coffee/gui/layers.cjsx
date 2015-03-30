@@ -16,7 +16,6 @@ module.exports = React.createClass
     layers = @state.layers
     layer = "layer #{Object.keys(layers).length + 1}"
 
-    @getFlux().actions.addLayer layer
     ServerAgent.send 'add_layer', {name: layer}
 
   changeGlobalOpacity: ->

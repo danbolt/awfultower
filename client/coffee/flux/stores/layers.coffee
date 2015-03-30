@@ -8,6 +8,7 @@ module.exports = Fluxxor.createStore
 
     @bindActions(
       _c.ADD_LAYER, @addLayer
+      _c.REMOVE_LAYER, @removeLayer
       _c.TOGGLE_LAYER_LOCKED, @toggleLayerLocked
       _c.TOGGLE_LAYER_VISIBLE, @toggleLayerVisible
       _c.CHANGE_LAYER, @changeLayer
@@ -34,20 +35,25 @@ module.exports = Fluxxor.createStore
     @globalOpacity = o
     @emit 'change', type, o
 
-  addLayer: (name, type) ->
-    @layers[name] =
-      name: name
-      visible: true
-      locked: false
-      order: Object.keys(@layers).length
+  addLayer: (layer, type) ->
+    data = _.clone layer
+    data.id = layer._id
+    data.visible = true
+    data.locked = false
+    data.order = Object.keys(@layers).length
 
-    @currentLayer = name
+    @layers[layer._id] = data
+    @currentLayer = layer._id
 
-    @emit 'change', type, name
+    @emit 'change', type, layer._id
+
+  removeLayer: (layerId, type) ->
+    delete @layers[layerId]
+    @emit 'change', type, layerId
 
   reorderLayers: (layers, type) ->
     _.each @layers, (layer) ->
-      layer.order = layers.indexOf layer.name
+      layer.order = layers.indexOf layer._id
 
     @emit 'change', type, layers
 

@@ -21,6 +21,7 @@ module.exports = class Map
     @delegate.socket.on 'remove_tile', @removeTile
     @delegate.socket.on 'new_map', @newMap
     @delegate.socket.on 'get_maps', @getMaps
+    @delegate.socket.on 'remove_layer', @deleteLayer
 
   getMap: =>
     matcher = /map=([a-zA-Z-0-9\_\-]+)/
@@ -135,11 +136,28 @@ module.exports = class Map
             cb(null, layerId)
 
       (layerId, cb) =>
-        @delegate.broadcastWithSender 'add_layer', {layerId: layerId, name: name}
+        @delegate.broadcastWithSender 'add_layer', {_id: layerId, name: name}
         cb()
 
     ], (err, result) =>
       return console.log err if err
+
+  deleteLayer: (data) =>
+    async.waterfall [
+      @userCanAccessMap
+      (map, cb) =>
+        return cb("No id specified") unless (id = ObjectId(data.layerId))
+
+        cb(null, map, id)
+
+      (map, layer, cb) =>
+        @maps.update {_id: map._id}, {$pull: {layers: layer}}, (err, map) =>
+          return cb(err) if err
+          cb()
+
+    ], (err, result) =>
+      return console.log err if err
+      @delegate.broadcastWithSender 'remove_layer', {layerId: data.layerId}
 
   # Batch up changes, clear the interval whenever anything changes. After 2000
   # seconds (of inactivity), write the changes
