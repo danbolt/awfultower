@@ -15,6 +15,7 @@ module.exports = Fluxxor.createStore
       _c.CHANGE_LAYER, @changeLayer
       _c.REORDER_LAYERS, @reorderLayers
       _c.TOGGLE_GLOBAL_OPACITY, @toggleGlobalOpacity
+      _c.CHANGE_LAYER_PROPERTIES, @changeLayerProperties
     )
 
   toggleLayerLocked: (p, type) ->
@@ -62,6 +63,10 @@ module.exports = Fluxxor.createStore
       layer.order = layers.indexOf layer._id
 
     @emit 'change', type, layers
+
+  changeLayerProperties: ({layerId, properties}, type) ->
+    @layers[layerId]?.properties = properties
+    @emit 'change', type, layerId, properties
 
   getState: ->
     layers: @layers

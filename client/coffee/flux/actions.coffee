@@ -54,3 +54,8 @@ module.exports =
     @dispatch _c.RENAME_LAYER,
       layerId: layerId
       name: name
+
+  changeLayerProperties: (layerId, properties) ->
+    @dispatch _c.CHANGE_LAYER_PROPERTIES,
+      layerId: layerId
+      properties: properties

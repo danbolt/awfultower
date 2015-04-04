@@ -80,6 +80,9 @@ module.exports = class Editor
     ServerAgent.bind 'rename_layer', (data) =>
       flux.actions.renameLayer(data.layerId, data.name)
 
+    ServerAgent.bind 'change_layer_properties', (data) =>
+      flux.actions.changeLayerProperties(data.layerId, data.properties)
+
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
 
