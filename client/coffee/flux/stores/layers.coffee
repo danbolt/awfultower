@@ -9,6 +9,7 @@ module.exports = Fluxxor.createStore
     @bindActions(
       _c.ADD_LAYER, @addLayer
       _c.REMOVE_LAYER, @removeLayer
+      _c.RENAME_LAYER, @renameLayer
       _c.TOGGLE_LAYER_LOCKED, @toggleLayerLocked
       _c.TOGGLE_LAYER_VISIBLE, @toggleLayerVisible
       _c.CHANGE_LAYER, @changeLayer
@@ -50,6 +51,11 @@ module.exports = Fluxxor.createStore
   removeLayer: (layerId, type) ->
     delete @layers[layerId]
     @emit 'change', type, layerId
+
+  renameLayer: ({layerId, name}, type) ->
+    @layers[layerId]?.name = name
+
+    @emit 'change', type, layerId, name
 
   reorderLayers: (layers, type) ->
     _.each @layers, (layer) ->

@@ -77,6 +77,9 @@ module.exports = class Editor
     ServerAgent.bind 'remove_layer', (data) =>
       flux.actions.removeLayer(data.layerId)
 
+    ServerAgent.bind 'rename_layer', (data) =>
+      flux.actions.renameLayer(data.layerId, data.name)
+
   preload: =>
     @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
 

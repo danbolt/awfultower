@@ -3,7 +3,7 @@ ServerAgent = require '../../editor/server_agent'
 
 module.exports = React.createClass
   displayName: "EditLayerModel"
-  mixins: [ModalMixin]
+  mixins: [ModalMixin, React.addons.LinkedStateMixin]
 
   config:
     className: "edit-layer"
@@ -17,7 +17,7 @@ module.exports = React.createClass
     e.preventDefault()
 
   getInitialState: ->
-    {}
+    name: @props.layer.name
 
   nameChange: (e) ->
     @setState name: e.target.value
@@ -30,14 +30,19 @@ module.exports = React.createClass
   submit: (e) ->
     e.preventDefault()
 
+    return unless @state.name isnt @props.layer.name
+
+    ServerAgent.send 'rename_layer',
+      { layerId: @props.layer.id, name: @state.name }
+
   renderContent: ->
     <div>
       <form className="form">
         <fieldset>
           <label> Name </label>
-          <input type="text" onClick={@nameChange} />
-          <button className="delete" onClick={@delete}> Delete Layer </button>
+          <input type="text" onClick={@nameChange} valueLink={@linkState('name')} />
         </fieldset>
+        <button className="delete" onClick={@delete}> Delete Layer </button>
         <div className="controls">
           <button className="cancel" onClick={@cancel}> Cancel </button>
           <button className="submit" onClick={@submit}> Save </button>

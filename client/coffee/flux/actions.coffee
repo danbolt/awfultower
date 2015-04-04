@@ -49,3 +49,8 @@ module.exports =
 
   removeLayer: (layerId) ->
     @dispatch _c.REMOVE_LAYER, layerId
+
+  renameLayer: (layerId, name) ->
+    @dispatch _c.RENAME_LAYER,
+      layerId: layerId
+      name: name

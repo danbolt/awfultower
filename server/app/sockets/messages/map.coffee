@@ -22,6 +22,7 @@ module.exports = class Map
     @delegate.socket.on 'new_map', @newMap
     @delegate.socket.on 'get_maps', @getMaps
     @delegate.socket.on 'remove_layer', @deleteLayer
+    @delegate.socket.on 'rename_layer', @renameLayer
 
   getMap: =>
     matcher = /map=([a-zA-Z-0-9\_\-]+)/
@@ -141,6 +142,26 @@ module.exports = class Map
 
     ], (err, result) =>
       return console.log err if err
+
+  renameLayer: (data) =>
+    async.waterfall [
+      @userCanAccessMap
+      (map, cb) =>
+        return cb("No id specified") unless (id = ObjectId(data.layerId))
+        return cb("No name spcified") unless data.name
+
+        cb(null, map, id)
+
+      (map, layerId, cb) =>
+        @layers.update {_id: layerId}, {$set: {name: data.name}}, (err, layer) =>
+          return cb(err) if err
+          cb()
+
+    ], (err, result) =>
+      return console.log err if err
+      @delegate.broadcastWithSender 'rename_layer',
+        layerId: data.layerId
+        name: data.name
 
   deleteLayer: (data) =>
     async.waterfall [

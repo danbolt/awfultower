@@ -16,6 +16,9 @@
   "overrides": {
     "underscore": {
       "main": "underscore.js"
+    },
+    "react": {
+      "main": "react-with-addons.js"
     }
   },
   "resolutions": {
