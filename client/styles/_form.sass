@@ -1,7 +1,18 @@
 .form
+
+  button
+    // Controls should have a margin
+    margin-left: 10px
+
+    &:hover
+      color: $highlight
+
   fieldset
     border: none
     padding: 0
+
+    button
+      margin: 0
 
   label
     font-size: 12px
@@ -19,12 +30,6 @@
     &:active, &:focus
       outline: none
 
-  button
-    margin-left: 10px
-
-    &:hover
-      color: $highlight
-
   .controls
     text-align: right
-
+    margin-top: 20px

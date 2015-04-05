@@ -57,6 +57,8 @@ module.exports = React.createClass
       ServerAgent.send 'change_layer_properties',
         { layerId: @props.layer.id, properties: properties }
 
+    @close()
+
   removeProperty: (index, e) ->
     properties = @state.properties
     properties.splice(index, 1)
@@ -66,13 +68,15 @@ module.exports = React.createClass
   renderProperties: ->
     for property, n in @state.properties
       <div className="property" key={property.key}>
-        <input type="text" className="key" defaultValue={property.key} />
-        <input type="text" className="value" defaultValue={property.value} />
-        <button className="fa fa-times" onClick={_.partial @removeProperty, n, _ } />
+        <input type="text" className="key" defaultValue={property.key} onKeyDown={@newPropertyClick}/>
+        <input type="text" className="value" defaultValue={property.value} onKeyDown={@newPropertyClick}/>
+        <button className="fa fa-times" onClick={_.partial @removeProperty, n, _ } tabIndex="-1"/>
       </div>
 
   newPropertyClick: (e) ->
+    return if e.keyCode and e.keyCode isnt 13
     properties = @state.properties
+
     properties.push {key: "value#{properties.length}", value:""}
     @setState properties: properties
 
@@ -87,19 +91,22 @@ module.exports = React.createClass
           <input type="text" onClick={@nameChange} valueLink={@linkState('name')} />
         </fieldset>
 
-        <fieldset>
-          <label> Properties </label>
+        <fieldset className="properties">
+          <label>
+
+            Properties
+            <button className="newProperty" onClick={@newPropertyClick}>
+              <i className="fa fa-plus" />
+            </button>
+
+          </label>
           { @renderProperties() }
 
-          <button className="newProperty" onClick={@newPropertyClick}>
-            new property
-          </button>
 
         </fieldset>
 
-        <button className="delete" onClick={@delete}> Delete Layer </button>
-
         <div className="controls">
+          <button className="delete" onClick={@delete}> Delete Layer </button>
           <button className="cancel" onClick={@cancel}> Cancel </button>
           <button className="submit" onClick={@submit}> Save </button>
         </div>

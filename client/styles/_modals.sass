@@ -14,7 +14,7 @@ $padding: 10px
   position: fixed
 
   width: $width
-  height: 400px
+  max-height: 400px
 
   background-color: white
 
@@ -56,6 +56,9 @@ $padding: 10px
 
 .modal.edit-layer
   .property
+    &:nth-child(n+2)
+      margin-top: 10px
+
     input[type="text"]
       display: inline-block
       margin-bottom: 0
@@ -65,5 +68,16 @@ $padding: 10px
       margin-left: 20px
 
     button
-      float: right
-      line-height: 28px
+      margin-left: 10px
+
+  .newProperty
+    i
+      margin-left: 10px
+
+  .delete
+    margin-left: 0
+    float: left
+
+  .properties
+    overflow: auto
+    max-height: 200px
