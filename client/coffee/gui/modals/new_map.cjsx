@@ -57,8 +57,8 @@ module.exports = React.createClass
         </fieldset>
 
         <div className="controls">
-          <button className="cancel" onClick={@cancel}> Cancel </button>
           <button className="submit" onClick={@submit}> Create </button>
+          <button className="cancel" onClick={@cancel}> Cancel </button>
         </div>
       </form>
     </div>

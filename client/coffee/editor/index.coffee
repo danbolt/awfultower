@@ -8,8 +8,6 @@ utils = require './utils'
 
 {tileWidth, tileHeight, sign} = utils
 
-MAP_SIZE = {x: 100, y: 100} # TODO this needs to be configurable
-
 module.exports = class Editor
   constructor: ->
 
@@ -28,6 +26,8 @@ module.exports = class Editor
     @username = null
 
     @peers = []
+
+    @mapSize = {x: 100, y: 100}
 
   # When a flux action is called call the appropriate method here
   bindFlux: ->
@@ -124,8 +124,11 @@ module.exports = class Editor
     ServerAgent.send 'load_map', {map: map}
 
   loadMap: (data) =>
-    width = data.width
-    height = data.height
+    @mapSize =
+      x: parseInt data.width
+      y: parseInt data.height
+
+    Minimap.setScale(data.width, data.height)
     name = data.name
 
     layers = data.layers
@@ -154,10 +157,10 @@ module.exports = class Editor
     if not @layers[name]
       if Object.keys(@layers).length
         # If we already have a layer, add a blank layer
-        @layers[name] = @map.createBlankLayer name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
+        @layers[name] = @map.createBlankLayer name, @mapSize.x, @mapSize.y, tileWidth, tileHeight
       else
         # Create the initial layer
-        @layers[name] = @map.create name, MAP_SIZE.x, MAP_SIZE.y, tileWidth, tileHeight
+        @layers[name] = @map.create name, @mapSize.x, @mapSize.y, tileWidth, tileHeight
 
     @changeLayer name
     @layers[name].id = name
@@ -314,8 +317,8 @@ module.exports = class Editor
 
   # Called from minimap clicks. Move the map to an absolute position
   moveCamera: (x, y) =>
-    @game.camera.x = x * MAP_SIZE.x * tileWidth - @game.width / 2
-    @game.camera.y = y * MAP_SIZE.y * tileHeight - @game.height / 2
+    @game.camera.x = x * @mapSize.x * tileWidth - @game.width / 2
+    @game.camera.y = y * @mapSize.y * tileHeight - @game.height / 2
 
   # Fill in or remove a region
   # x and y are the min point of the region (top left)

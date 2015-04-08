@@ -74,13 +74,32 @@ module.exports = class Map
 
   newMap: (data) =>
 
+    mapData = {}
+
     async.waterfall [
       (cb) =>
         return unless data.name and data.width and data.height
-        data.layers = []
-        data.users = [@delegate.username]
 
-        @maps.insert data, (err, map) =>
+        mapData.users = [@delegate.username]
+        mapData.name = data.name
+        mapData.width = parseInt data.width
+        mapData.height = parseInt data.height
+
+        cb()
+
+      (cb) =>
+        @layers.insert {name: "layer-1"}, (err, layer) =>
+          return cb "Error saving layer", err if err
+          return cb "Layer failed to be created" unless layer?.ops?[0]
+
+          id = layer.ops[0]._id
+          mapData.layers = [id]
+
+          cb()
+
+      (cb) =>
+
+        @maps.insert mapData, (err, map) =>
           return cb(err) if err
           return cb("Map failed to be created") unless map?.ops?[0]
           cb(null, map.ops[0])

@@ -1,4 +1,5 @@
 Stamp = require '../editor/lib/stamp'
+ModalManager = require './modal_manager'
 {tileWidth, tileHeight} = require '../editor/utils'
 
 module.exports = React.createClass
@@ -84,10 +85,16 @@ module.exports = React.createClass
       width: ((maxX - minX) + 1) * tileWidth
       height: ((maxY - minY) + 1) * tileHeight
 
+  addClick: ->
+    @getFlux().actions.openModal 'tilesheet', {}
+
   render: ->
     <div className="panel legend" ref="panel">
       <h2>
         TILES
+        <div className="controls">
+          <button className="fa fa-plus" onClick={@addClick}/>
+        </div>
       </h2>
       <div className="imageContainer">
         <img src="images/level3.png" ref="image"/>

@@ -9,9 +9,6 @@ module.exports = React.createClass
     className: "edit-layer"
     title: "Edit Layer"
 
-  getInitialState: ->
-    {}
-
   cancel: (e) ->
     @close()
     e.preventDefault()

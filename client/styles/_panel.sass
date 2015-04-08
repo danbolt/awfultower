@@ -9,3 +9,16 @@
 
   margin-top: 32px
 
+  .controls
+    display: inline-block
+    float: right
+
+    button
+      color: white
+
+      &:hover, &.active
+        color: $highlight
+
+      &:nth-last-child(n+2)
+        margin-right: 10px
+

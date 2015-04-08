@@ -3,8 +3,6 @@
 WIDTH = 256
 HEIGHT = 256
 
-MAP_SIZE = {x: 100, y: 100}
-
 class Minimap
   constructor: ->
     @game = new Phaser.Game WIDTH, HEIGHT, Phaser.AUTO, "minimap",
@@ -16,8 +14,13 @@ class Minimap
     @tiles = {}
 
     @scale =
-      x: (WIDTH / MAP_SIZE.x) / tileWidth
-      y: (HEIGHT / MAP_SIZE.y) / tileHeight
+      x: (WIDTH / 100) / tileWidth
+      y: (HEIGHT / 100) / tileHeight
+
+  setScale: (x, y) =>
+    @scale =
+      x: (WIDTH / x) / tileWidth
+      y: (HEIGHT / y) / tileHeight
 
   init: (@delegate) ->
     @highlight = @game.add.graphics()
