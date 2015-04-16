@@ -27,7 +27,7 @@ class Minimap
     @resizeHighlight()
 
   preload: =>
-    @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
+    @game.load.spritesheet 'level', 'tilesheet/foo', tileWidth, tileHeight
 
   create: =>
     @game.stage.backgroundColor = '#2d2d2d'

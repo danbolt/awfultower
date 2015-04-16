@@ -97,7 +97,7 @@ module.exports = React.createClass
         </div>
       </h2>
       <div className="imageContainer">
-        <img src="images/level3.png" ref="image"/>
+        <img src="tilesheet/foo" ref="image" />
         <div className="mask" onMouseUp={@mouseUp} onMouseDown={@mouseDown} onMouseMove={@mouseMove} >
           <div className="highlight" style={@state.highlightStyle}/>
         </div>

@@ -1,11 +1,12 @@
 _ = require 'underscore'
-{Stamp, Map} = require './messages'
+{Stamp, Map, Tilesheet} = require './messages'
 
 module.exports = class user
   constructor: (@username, @socket, @delegate) ->
     @room = null
     new Stamp @
     new Map @
+    new Tilesheet @
 
   broadcast: (message, data) ->
     @socket.broadcast.emit message, data

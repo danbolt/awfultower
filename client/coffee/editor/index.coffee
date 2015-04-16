@@ -84,7 +84,7 @@ module.exports = class Editor
       flux.actions.changeLayerProperties(data.layerId, data.properties)
 
   preload: =>
-    @game.load.spritesheet 'level', 'images/level3.png', tileWidth, tileHeight
+    @game.load.spritesheet 'level', 'tilesheet/foo', tileWidth, tileHeight
 
   create: =>
     @initial_load = true

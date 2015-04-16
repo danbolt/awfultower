@@ -24,7 +24,7 @@ module.exports = React.createClass
     style =
       width: "#{tileWidth}px"
       height: "#{tileHeight}px"
-      background: "url('images/level3.png')"
+      background: "url('tilesheet/foo')"
 
     <div id="quick-select" style={height: "#{tileHeight}px"}>
       {

@@ -22,12 +22,12 @@ module.exports = React.createClass
 
   renderContent: ->
     <div>
-      <form className="form">
-
-        <div className="controls">
-          <button className="cancel" onClick={@cancel}> Cancel </button>
-          <button className="submit" onClick={@submit}> Save </button>
-        </div>
-
+      <form
+        className="form"
+        encType="multipart/form-data"
+        action="tilesheet"
+        method="post">
+          <input type="file" name="tilesheet" />
+          <input type="submit" value="New Tilesheet" name="submit" />
       </form>
     </div>

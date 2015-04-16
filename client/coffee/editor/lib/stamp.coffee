@@ -26,11 +26,13 @@ class Stamp
 
   # Helper method to add a single tile (index) to the stamp
   setSingle: (index) ->
+    index = Math.floor index
     @setMultiple [[ index ]]
 
   # indicies should be a 2d array of x, y tile indicies
   setMultiple: (indicies) ->
     @tiles = indicies
+
     @updatePreview()
 
   beginBandFill: (x, y) ->

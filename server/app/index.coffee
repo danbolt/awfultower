@@ -10,6 +10,7 @@ MongoStore = require('connect-mongo')(session)
 SocketManager = require './sockets'
 DB = require '../db'
 router = require './router'
+FileUpload = require './file_upload'
 
 class App
   constructor: ->
@@ -27,6 +28,8 @@ class App
     app.use sessionMiddleware
 
     app.use router
+
+    FileUpload.init app
 
     server = http.createServer app
     server.listen 3000

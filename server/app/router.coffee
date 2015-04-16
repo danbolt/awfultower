@@ -1,8 +1,6 @@
 express = require 'express'
 path = require 'path'
 
-db = require '../db'
-
 Auth = require './auth'
 
 pub = path.join __dirname, '../..', "/public"
