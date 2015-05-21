@@ -10,23 +10,6 @@ game for the time being and release an awesome level editor.
 My goal is to create a lightweight map editor, that allows multiple people to
 collaborate on maps at the **same time**.
 
-## Setup
-This project requires you to have **Node** and npm installed. Then you will need to
-install:
-
- * [MongoDB](https://www.mongodb.org/)
- * [Gulp](http://gulpjs.com/ ) - `npm install -g gulp`
- * [Coffeescript](http://coffeescript.org/) - `npm install -g coffee-script`
-
-Clone the repo, build it, and go!
-
-```
-git clone https://github.com/toadums/awfultower
-cd awfultower
-npm install && bower install
-gulp
-```
-
 ## Its not quite done yet..
 
 I haven't found the time to finish this project yet. Some fairly basic things
@@ -49,4 +32,21 @@ create a new map
   hit the + in the bottom left
 
 Enjoy drawing, and not being able to export your tilemap D:
+```
+
+## Setup
+This project requires you to have **Node** and npm installed. Then you will need to
+install:
+
+ * [MongoDB](https://www.mongodb.org/)
+ * [Gulp](http://gulpjs.com/ ) - `npm install -g gulp`
+ * [Coffeescript](http://coffeescript.org/) - `npm install -g coffee-script`
+
+Clone the repo, build it, and go!
+
+```
+git clone https://github.com/toadums/awfultower
+cd awfultower
+npm install && bower install
+gulp
 ```
