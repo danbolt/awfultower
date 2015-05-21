@@ -26,3 +26,27 @@ cd awfultower
 npm install && bower install
 gulp
 ```
+
+## Its not quite done yet..
+
+I haven't found the time to finish this project yet. Some fairly basic things
+are missing, and the user experience is non-existant ^_^
+
+The two deal breakers are that not finished yet are: exporting maps to JSON,
+and importing tilesheets - this was the last thing I worked on, so it is kinda started.
+
+Here is what you need to do to start making a level:
+
+```
+Go to localhost:3000/login
+create an account
+signin
+
+import a tilesheet (must be 32x32 with no padding between cells).
+  You can download level3.png from the assets and use that...its a tad off, but will give you the idea
+
+create a new map
+  hit the + in the bottom left
+
+Enjoy drawing, and not being able to export your tilemap D:
+```

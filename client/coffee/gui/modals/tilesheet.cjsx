@@ -28,6 +28,6 @@ module.exports = React.createClass
         action="tilesheet"
         method="post">
           <input type="file" name="tilesheet" />
-          <input type="submit" value="New Tilesheet" name="submit" />
+          <input type="submit" value="Add Tilesheet" name="submit" />
       </form>
     </div>
